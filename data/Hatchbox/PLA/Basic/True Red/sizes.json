@@ -1,0 +1,16 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "empty_spool_weight": 244,
+    "spool_core_diameter": 55,
+    "ean": "849344024262",
+    "purchase_links": [
+      {
+        "id": "amazon",
+        "url": "https://www.amazon.com/HATCHBOX-3D-Filament-Dimensional-Accuracy/dp/B00J0GO8I0/ref=sr_1_2_pp?crid=31E4GCP46RJ9V&dib=eyJ2IjoiMSJ9.XGC3yT5ySlxRvFTR0LLrawO2Z14sy2O8QkdlXEUPhbikyhW-0O1XpqmIN0GOwamR782HTDz2T82Iuc7dsm9vNXyVJl7l4OtpFPBHMRtjTJLkH2cJmTVpLVGqdxn6o4Htb7NM4qfLkVP8G9lZAaHH11xA1fwH7YjAqBHWNJtfVCcA7R7ADvetHZf9Ph_r8xrgK1nkoJyVm0auZjOXbxYPTmp7XZjMfUkBTmvcSb_W9AA.6jUf3vy-auncm-42d1Fx__zxD0Fnqy8llBvT8BrYxns&dib_tag=se&keywords=hatchbox&qid=1711031287&sprefix=hatchbox%2Caps%2C114&sr=8-2&th=1",
+        "affiliate": false
+      }
+    ]
+  } 
+]

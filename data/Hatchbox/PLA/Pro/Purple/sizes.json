@@ -1,0 +1,16 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "empty_spool_weight": 244,
+    "spool_core_diameter": 55,
+    "ean": "849344042501",
+    "purchase_links": [
+      {
+        "id": "amazon",
+        "url": "https://www.amazon.com/HATCHBOX-PPLA-1KG1-75-BLK-Performance-Filament-Dimensional/dp/B017UZB1K0?th=1",
+        "affiliate": false
+      }
+    ]
+  } 
+]

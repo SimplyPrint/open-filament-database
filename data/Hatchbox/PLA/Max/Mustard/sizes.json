@@ -1,0 +1,16 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "empty_spool_weight": 282,
+    "spool_core_diameter": 52,
+    "ean": "191314044658",
+    "purchase_links": [
+      {
+        "id": "amazon",
+        "url": "https://www.amazon.com/dp/B0CXZLKFZZ/ref=twister_B0CY11S63G?_encoding=UTF8&th=1",
+        "affiliate": false
+      }
+    ]
+  } 
+]

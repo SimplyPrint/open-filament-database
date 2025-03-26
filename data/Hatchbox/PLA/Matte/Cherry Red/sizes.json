@@ -1,0 +1,16 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "empty_spool_weight": 244,
+    "spool_core_diameter": 55,
+    "ean": "191314042708",
+    "purchase_links": [
+      {
+        "id": "amazon",
+        "url": "https://www.amazon.com/HATCHBOX-Printer-Filament-Dimensional-Accuracy/dp/B0CK9GY627/ref=asc_df_B0CK9GY627/?tag=hyprod-20&linkCode=df0&hvadid=693071814430&hvpos=&hvnetw=g&hvrand=6577851326547202864&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9016254&hvtargid=pla-2247552469158&mcid=c4bba60673e73c6d94c99cfe48754d15&th=1",
+        "affiliate": false
+      }
+    ]
+  } 
+]
