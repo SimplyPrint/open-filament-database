@@ -6,6 +6,9 @@
     "activate_air_filtration": [
         "0"
     ],
+    "additional_cooling_fan_speed": [
+        "70"
+    ],
     "chamber_temperatures": [
         "0"
     ],
@@ -63,6 +66,9 @@
     "filament_max_volumetric_speed": [
         "6"
     ],
+    "filament_ramming_volumetric_speed": [
+        "-1"
+    ],
     "filament_minimal_purge_on_wipe_tower": [
         "15"
     ],
@@ -105,6 +111,9 @@
     "filament_wipe_distance": [
         "nil"
     ],
+    "filament_prime_volume": [
+        "45"
+    ],
     "filament_z_hop": [
         "nil"
     ],
@@ -113,6 +122,12 @@
     ],
     "full_fan_speed_layer": [
         "0"
+    ],
+    "filament_extruder_id": [
+        "1"
+    ],
+    "filament_extruder_variant": [
+        "Direct Drive Standard"
     ],
     "filament_scarf_seam_type": [
         "none"
@@ -134,6 +149,12 @@
     ],
     "hot_plate_temp_initial_layer": [
         "55"
+    ],
+    "nozzle_temperature_range_low": [
+        "220"
+    ],
+    "nozzle_temperature_range_high": [
+        "250"
     ],
     "nozzle_temperature": [
         "235"
@@ -177,6 +198,42 @@
     "textured_plate_temp_initial_layer": [
         "55"
     ],
+    "counter_coef_1": [
+        "0"
+    ],
+    "counter_coef_2": [
+        "0.008"
+    ],
+    "counter_coef_3": [
+        "-0.041"
+    ],
+    "hole_coef_1": [
+        "0"
+    ],
+    "hole_coef_2": [
+        "-0.008"
+    ],
+    "hole_coef_3": [
+        "0.23415"
+    ],
+    "counter_limit_min": [
+        "-0.035"
+    ],
+    "counter_limit_max": [
+        "0.033"
+    ],
+    "hole_limit_min": [
+        "0.088"
+    ],
+    "hole_limit_max": [
+        "0.22"
+    ],
+    "circle_compensation_speed": [
+        "200"
+    ],
+    "diameter_limit": [
+        "50"
+    ],
     "compatible_printers": [
         "Bambu Lab P1P 0.4 nozzle",
         "Bambu Lab P1P 0.6 nozzle",
@@ -194,20 +251,23 @@
         "Bambu Lab X1E 0.6 nozzle",
         "Bambu Lab X1E 0.8 nozzle"
     ],
+    "impact_strength_z": [
+        "9.0"
+    ],
     "filament_start_gcode": [
         "; filament start gcode\n{if  (bed_temperature[current_extruder] >45)||(bed_temperature_initial_layer[current_extruder] >45)}M106 P3 S255\n{elsif(bed_temperature[current_extruder] >35)||(bed_temperature_initial_layer[current_extruder] >35)}M106 P3 S180\n{endif}\n\n{if activate_air_filtration[current_extruder] && support_air_filtration}\nM106 P3 S{during_print_exhaust_fan_speed_num[current_extruder]} \n{endif}"
     ],
     "filament_end_gcode": [
-        "; filament end gcode \nM106 P3 S0\n"
+        "; filament end gcode \n\n"
     ],
-    "additional_cooling_fan_speed": [
-        "70"
+    "filament_pre_cooling_temperature": [
+        "0"
     ],
-    "nozzle_temperature_range_high": [
-        "250"
+    "filament_ramming_travel_time": [
+        "0"
     ],
-    "nozzle_temperature_range_low": [
-        "220"
+    "filament_adhesiveness_category": [
+        "902"
     ],
     "filament_id": "GFP95",
     "description": "This is neither a commonly used filament, nor one of Bambu filaments, and it varies a lot from brand to brand. So, it's highly recommended to ask its vendor for suitable profile before printing and adjust some parameters according to its performances.",

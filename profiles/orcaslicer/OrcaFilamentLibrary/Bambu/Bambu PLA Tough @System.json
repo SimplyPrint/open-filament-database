@@ -184,7 +184,7 @@
         "; filament end gcode\n"
     ],
     "compatible_printers": [],
-    "filament_id": "GFA09",
+    "filament_id": "OGFA09",
     "additional_cooling_fan_speed": [
         "0"
     ],

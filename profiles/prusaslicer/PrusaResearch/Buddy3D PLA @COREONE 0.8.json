@@ -38,7 +38,7 @@
     "first_layer_temperature": "230",
     "max_fan_speed": "100",
     "min_fan_speed": "85",
-    "temperature": "220",
+    "temperature": "225",
     "filament_vendor": "Buddy3D",
     "filament_spool_weight": "193",
     "idle_temperature": "150",

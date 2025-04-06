@@ -184,7 +184,7 @@
         "; filament end gcode\n"
     ],
     "compatible_printers": [],
-    "filament_id": "GFP99",
+    "filament_id": "OGFP99",
     "additional_cooling_fan_speed": [
         "70"
     ],

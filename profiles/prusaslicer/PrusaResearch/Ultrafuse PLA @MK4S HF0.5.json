@@ -39,7 +39,7 @@
     "max_fan_speed": "100",
     "min_fan_speed": "70",
     "temperature": "220",
-    "filament_vendor": "BASF",
+    "filament_vendor": "Forward AM",
     "idle_temperature": "70",
     "filament_travel_ramping_lift": "1",
     "filament_travel_max_lift": "0.6",

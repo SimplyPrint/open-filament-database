@@ -184,7 +184,7 @@
         "; filament end gcode\n"
     ],
     "compatible_printers": [],
-    "filament_id": "GFN05",
+    "filament_id": "OGFN05",
     "additional_cooling_fan_speed": [
         "0"
     ],

@@ -199,7 +199,7 @@
     "nozzle_temperature_range_low": [
         "215"
     ],
-    "filament_id": "GFL99",
+    "filament_id": "BFLSBS99",
     "description": "To make the prints get higher gloss, please dry the filament before use, and set the outer wall speed to be 40 to 60 mm/s when slicing.",
     "setting_id": "GFSG02_01"
 }

@@ -184,7 +184,7 @@
         "; filament end gcode\n"
     ],
     "compatible_printers": [],
-    "filament_id": "GFR98",
+    "filament_id": "OGFR98",
     "additional_cooling_fan_speed": [
         "70"
     ],
