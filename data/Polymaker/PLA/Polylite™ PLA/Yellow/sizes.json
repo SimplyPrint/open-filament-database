@@ -1,0 +1,12 @@
+[
+  {
+    "filament_weight": 1000,
+    "empty_spool_weight": 140,
+    "diameter": 1.75
+  },
+  {
+    "filament_weight": 1000,
+    "empty_spool_weight": 140,
+    "diameter": 2.85
+  }
+]
