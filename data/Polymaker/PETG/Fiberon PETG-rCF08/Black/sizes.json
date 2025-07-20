@@ -2,15 +2,11 @@
   {
     "filament_weight": 3000,
     "empty_spool_weight": 100,
-    "diameter": 1.75,
-    "spool_refill": false,
-    "density": 0
+    "diameter": 1.75
   },
   {
     "filament_weight": 500,
     "empty_spool_weight": 100,
-    "diameter": 1.75,
-    "spool_refill": false,
-    "density": 0
+    "diameter": 1.75
   }
 ]

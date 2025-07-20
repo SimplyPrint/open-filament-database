@@ -28,5 +28,11 @@
     "fan_below_layer_time": "20",
     "filament_vendor": "Polymaker",
     "filament_spool_weight": "140",
-    "start_filament_gcode": "\"; Filament gcode\\n{local pressure_advance = 0.030}\\n{if printer_notes=~/.*DUPLICATOR_MODE.*/}\\nM572 D0:1 S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"}\\\"} D0 L65 H120\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"}\\\"} D1 L65 H120\\n{else}\\nM572 D{current_extruder} S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"}\\\"} D{current_extruder} L65 H120\\n{endif}\""
+    "start_filament_gcode": "\"; Filament gcode\\n{local pressure_advance = 0.030}\\n{if printer_notes=~/.*DUPLICATOR_MODE.*/}\\nM572 D0:1 S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"
+}\\\"
+} D0 L65 H120\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"
+}\\\"
+} D1 L65 H120\\n{else}\\nM572 D{current_extruder} S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"
+}\\\"
+} D{current_extruder} L65 H120\\n{endif}\""
 }

@@ -28,5 +28,7 @@
     "compatible_prints_condition": "notes=~/.*SOLUBLE_SUPPORT.*/",
     "filament_vendor": "Polymaker",
     "filament_spool_weight": "140",
-    "start_filament_gcode": "\"; Filament gcode\\n{if nozzle_diameter[initial_extruder] == 0.6}{local pressure_advance = 0.018}\\n{elsif nozzle_diameter[initial_extruder] == 0.4}{local pressure_advance = 0.0}\\n{elsif nozzle_diameter[initial_extruder] == 0.8}{local pressure_advance = 0.0}\\n{elsif nozzle_diameter[initial_extruder] == 1.0}{local pressure_advance = 0.0}\\n{endif}\\n{if printer_notes=~/.*DUPLICATOR_MODE.*/}\\nM572 D0:1 S{pressure_advance}\\n{else}\\nM572 D{current_extruder} S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"}\\\"} D{current_extruder} L60 H140\\n{endif}\""
+    "start_filament_gcode": "\"; Filament gcode\\n{if nozzle_diameter[initial_extruder] == 0.6}{local pressure_advance = 0.018}\\n{elsif nozzle_diameter[initial_extruder] == 0.4}{local pressure_advance = 0.0}\\n{elsif nozzle_diameter[initial_extruder] == 0.8}{local pressure_advance = 0.0}\\n{elsif nozzle_diameter[initial_extruder] == 1.0}{local pressure_advance = 0.0}\\n{endif}\\n{if printer_notes=~/.*DUPLICATOR_MODE.*/}\\nM572 D0:1 S{pressure_advance}\\n{else}\\nM572 D{current_extruder} S{pressure_advance}\\nM98 P{\\\"{directories.system^\\\\\\\"/System Macros/Change Settings/adjust_filament_monitor_sensitivity.g\\\\\\\"
+}\\\"
+} D{current_extruder} L60 H140\\n{endif}\""
 }

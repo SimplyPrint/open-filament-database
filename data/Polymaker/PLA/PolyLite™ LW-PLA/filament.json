@@ -1,7 +1,5 @@
 {
   "name": "PolyLite™ LW-PLA",
   "diameter_tolerance": 0.02,
-  "density": 0.9,
-  "data_sheet_url": "https://polymaker.com/wp-content/uploads/lana-downloads/PolyLite_LW-PLA_TDS_US_5.3.pdf",
-  "safety_sheet_url": "https://polymaker.com/wp-content/tech-docs/PolyLite_LW-PLA_SDS_US_EN_V1.1.pdf"
+  "density": 0.9
 }
