@@ -1,0 +1,66 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-PB01001-PolyLite-hitzebest%C3%A4ndig-Zugfestigkeit/dp/B09DKP4TLW?crid=C31UP1V00SYA&dib=eyJ2IjoiMSJ9.veRbXj5WXtVKp4BY2HzGHKY8ddpHXM16CdxpADwhtc14I6SRGbVFjtsxr-LpiJ1EcFrSpHS_X3bNfw6yFCYrYIqb15k9Epzw7v4NcvL0TNZnk_MYf__2W060UX-ahB9QFxSvImYOvrau8AtzPggrcL7KpcT7Eh0YsbCJz1y3KBgL0jqa2cvVCXipbCG5MhrzYeUa70ucRx1Da4NSw4SP4EV_iNI5YGfIF05-6SgMEwo.pSIuG8L8KS9CFPQ8r1trT3aCclijeQ_SWaQI-1fBvKI&dib_tag=se&keywords=PolyLite%2BPETG&qid=1753024150&sprefix=polylite%2Bpetg%2Caps%2C191&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-petg?variant=39574344925241",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 3000,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-PB01001-PolyLite-hitzebest%C3%A4ndig-Zugfestigkeit/dp/B0BKDT5FLH?crid=C31UP1V00SYA&dib=eyJ2IjoiMSJ9.veRbXj5WXtVKp4BY2HzGHKY8ddpHXM16CdxpADwhtc14I6SRGbVFjtsxr-LpiJ1EcFrSpHS_X3bNfw6yFCYrYIqb15k9Epzw7v4NcvL0TNZnk_MYf__2W060UX-ahB9QFxSvImYOvrau8AtzPggrcL7KpcT7Eh0YsbCJz1y3KBgL0jqa2cvVCXipbCG5MhrzYeUa70ucRx1Da4NSw4SP4EV_iNI5YGfIF05-6SgMEwo.pSIuG8L8KS9CFPQ8r1trT3aCclijeQ_SWaQI-1fBvKI&dib_tag=se&keywords=PolyLite%2BPETG&qid=1753024150&sprefix=polylite%2Bpetg%2Caps%2C191&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-petg?variant=43230037475385",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 5000,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-PB01001-PolyLite-hitzebest%C3%A4ndig-Zugfestigkeit/dp/B0BKFRY2K4?crid=C31UP1V00SYA&dib=eyJ2IjoiMSJ9.veRbXj5WXtVKp4BY2HzGHKY8ddpHXM16CdxpADwhtc14I6SRGbVFjtsxr-LpiJ1EcFrSpHS_X3bNfw6yFCYrYIqb15k9Epzw7v4NcvL0TNZnk_MYf__2W060UX-ahB9QFxSvImYOvrau8AtzPggrcL7KpcT7Eh0YsbCJz1y3KBgL0jqa2cvVCXipbCG5MhrzYeUa70ucRx1Da4NSw4SP4EV_iNI5YGfIF05-6SgMEwo.pSIuG8L8KS9CFPQ8r1trT3aCclijeQ_SWaQI-1fBvKI&dib_tag=se&keywords=PolyLite%2BPETG&qid=1753024150&sprefix=polylite%2Bpetg%2Caps%2C191&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-petg?variant=43230047404089",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 2.85,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-PolyLite-Openning-Printers/dp/B09LV8JL4L?crid=C31UP1V00SYA&dib=eyJ2IjoiMSJ9.veRbXj5WXtVKp4BY2HzGHKY8ddpHXM16CdxpADwhtc14I6SRGbVFjtsxr-LpiJ1EcFrSpHS_X3bNfw6yFCYrYIqb15k9Epzw7v4NcvL0TNZnk_MYf__2W060UX-ahB9QFxSvImYOvrau8AtzPggrcL7KpcT7Eh0YsbCJz1y3KBgL0jqa2cvVCXipbCG5MhrzYeUa70ucRx1Da4NSw4SP4EV_iNI5YGfIF05-6SgMEwo.pSIuG8L8KS9CFPQ8r1trT3aCclijeQ_SWaQI-1fBvKI&dib_tag=se&keywords=PolyLite%2BPETG&qid=1753024150&sprefix=polylite%2Bpetg%2Caps%2C191&sr=8-4&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-petg?variant=39574344597561",
+        "affiliate": false
+      }
+    ]
+  }
+]
