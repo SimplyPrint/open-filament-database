@@ -1,5 +1,5 @@
 {
   "name": "PLA-Silk",
-  "diameter_tolerance": 0.02,
+  "diameter_tolerance": 0.03,
   "density": 1.41
 }
