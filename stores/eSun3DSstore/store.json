@@ -1,0 +1,19 @@
+{
+    "id": "esun3d",
+    "name": "eSUN",
+    "storefront_url": "https://esun3dstore.com/",
+    "affiliate": false,
+    "logo": "esun3d.png",
+    "ships_from": [
+        "US",
+        "UK",
+        "EU",
+        "CA"
+    ],
+    "ships_to": [
+        "US",
+        "UK",
+        "EU",
+        "CA"
+    ]
+}
