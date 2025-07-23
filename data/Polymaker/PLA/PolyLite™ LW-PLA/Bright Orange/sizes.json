@@ -1,0 +1,13 @@
+[
+  {
+    "filament_weight": 800,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-lw-pla?variant=40603758526521",
+        "affiliate": false
+      }
+    ]
+  }
+]

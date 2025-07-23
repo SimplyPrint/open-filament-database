@@ -1,0 +1,56 @@
+[
+  {
+    "filament_weight": 750,
+    "diameter": 2.85,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-Printing-Functional-Application/dp/B09MTC25K3?crid=3CNPJGRISIMII&dib=eyJ2IjoiMSJ9.1kjNiseCMLkZjfNzIBQqbLMq5p1je-TyBy-VMfdvY4SCSgS-vGY_iFB0nbEO7JDQy_rrUBpAcQeqnhT_kordzS-R7Mr0OsBJIQG4p0I5xJ1fc4xpc1N1VyWXrSJh0uyk5AzPnsApQcAwOK4MiyaUIUkZNP3LUwUW4zpOP9K0tUJxF0ALD4u_AHncZqRU7BSJoWpV9lOo4H0YRsRO09r11H5QwFhZ3enCQV6_XHmR9m4.aNzWV7LjV926etT-7YAtrs4keDa7qRCHHNWQkX5buTY&dib_tag=se&keywords=polymax%2Bpla&qid=1753021540&sprefix=polymax%2Bpla%2Caps%2C194&sr=8-5&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polymax-pla?variant=39574348922937",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 3000,
+    "diameter": 2.85,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-Printing-Functional-Application/dp/B0B45QXVZY?crid=3CNPJGRISIMII&dib=eyJ2IjoiMSJ9.1kjNiseCMLkZjfNzIBQqbLMq5p1je-TyBy-VMfdvY4SCSgS-vGY_iFB0nbEO7JDQy_rrUBpAcQeqnhT_kordzS-R7Mr0OsBJIQG4p0I5xJ1fc4xpc1N1VyWXrSJh0uyk5AzPnsApQcAwOK4MiyaUIUkZNP3LUwUW4zpOP9K0tUJxF0ALD4u_AHncZqRU7BSJoWpV9lOo4H0YRsRO09r11H5QwFhZ3enCQV6_XHmR9m4.aNzWV7LjV926etT-7YAtrs4keDa7qRCHHNWQkX5buTY&dib_tag=se&keywords=polymax%2Bpla&qid=1753021540&sprefix=polymax%2Bpla%2Caps%2C194&sr=8-5&th=1",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 750,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-PolyMax-Tough-PLA-Black/dp/B09KKXFQRG?crid=3CNPJGRISIMII&dib=eyJ2IjoiMSJ9.1kjNiseCMLkZjfNzIBQqbLMq5p1je-TyBy-VMfdvY4SCSgS-vGY_iFB0nbEO7JDQy_rrUBpAcQeqnhT_kordzS-R7Mr0OsBJIQG4p0I5xJ1fc4xpc1N1VyWXrSJh0uyk5AzPnsApQcAwOK4MiyaUIUkZNP3LUwUW4zpOP9K0tUJxF0ALD4u_AHncZqRU7BSJoWpV9lOo4H0YRsRO09r11H5QwFhZ3enCQV6_XHmR9m4.aNzWV7LjV926etT-7YAtrs4keDa7qRCHHNWQkX5buTY&dib_tag=se&keywords=polymax%2Bpla&qid=1753021540&sprefix=polymax%2Bpla%2Caps%2C194&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polymax-pla?variant=39574348595257",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 3000,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-PolyMax-Tough-PLA-Black/dp/B0B45QRF83?crid=3CNPJGRISIMII&dib=eyJ2IjoiMSJ9.1kjNiseCMLkZjfNzIBQqbLMq5p1je-TyBy-VMfdvY4SCSgS-vGY_iFB0nbEO7JDQy_rrUBpAcQeqnhT_kordzS-R7Mr0OsBJIQG4p0I5xJ1fc4xpc1N1VyWXrSJh0uyk5AzPnsApQcAwOK4MiyaUIUkZNP3LUwUW4zpOP9K0tUJxF0ALD4u_AHncZqRU7BSJoWpV9lOo4H0YRsRO09r11H5QwFhZ3enCQV6_XHmR9m4.aNzWV7LjV926etT-7YAtrs4keDa7qRCHHNWQkX5buTY&dib_tag=se&keywords=polymax%2Bpla&qid=1753021540&sprefix=polymax%2Bpla%2Caps%2C194&sr=8-3&th=1",
+        "affiliate": false
+      }
+    ]
+  }
+]

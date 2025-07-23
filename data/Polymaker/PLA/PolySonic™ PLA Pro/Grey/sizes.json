@@ -1,0 +1,18 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter":1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-1-75mm-PolySonic-Printer/dp/B0CJXHVHQJ?crid=1W21XOSGIHUC8&dib=eyJ2IjoiMSJ9.V53AE24M5ax5Rd6JGr6JyXt1WJhI0yhJ-0t29Rt0FFYHynfVJAI_YuDIvuS6eQoQ3BljtYY0FnTzHSgSe1fSjwkuOAXRw8Cn3ACStKpYvOG3O1YsFhq6e8s5_DXJWrSzlgAnTVD9F0KjL3kw3dTwoUGLHIYJR25cDmyubJNQkhKgARjdv8ryw0ohlryI-wSVK4IYJS187tBgEfbMv9pS_giIlXzkU_undhFTMmCnH0w.uav5bMzaAGE7l81U3YYiXs0h6o4QFYDSKZ1tCzatvWk&dib_tag=se&keywords=polysonic%2Bpla%2Bpro&qid=1753023622&sprefix=polysonic%2Bpla%2Bpro%2Caps%2C272&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polysonic-pla-pro?variant=42901840396345",
+        "affiliate": false
+      }
+    ]
+  }
+]

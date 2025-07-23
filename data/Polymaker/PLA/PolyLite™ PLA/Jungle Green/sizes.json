@@ -1,0 +1,19 @@
+[
+  {
+    "filament_weight": 1000,
+    "empty_spool_weight": 140,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-1-75mm-Rigidity-Cardboard/dp/B0B2P3SKGD?crid=1L81EPEU897ZZ&dib=eyJ2IjoiMSJ9.QfYCSIn1FJyQdwDHQsegW3lSBC1ooqMMWmxHdJMttlKefP-ArBvf85N6-G5mIZGb1mAVyGMbSpAhkgM7s1qvJjSWgY66TqcVYxArM9-URn5vueMn--YVXEDKOaGNHIPrqfIrCK5WTgzv_xXi9oVGet2_59Hp4vYWUlWporXTqnZJYq7shGgUGlfwh-dc6voLybiNMgquSXFkvk27LbQzL3qg2lxT3vwReHc2HWWydRo.Vg1GZyGOUEsPZeCpI1H8b3PKLiWaaSQS_hK__PdfqoA&dib_tag=se&keywords=polylite%2Bpla&qid=1753017217&sprefix=polylite%2Bpla%2Caps%2C461&sr=8-4&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-pla?variant=43818026467385",
+        "affiliate": false
+      }
+    ]
+  }
+]

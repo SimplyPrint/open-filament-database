@@ -1,0 +1,13 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter":1.75,
+    "purchase_links": [
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polysonic-pla-pro?variant=42901840363577",
+        "affiliate": false
+      }
+    ]
+  }
+]

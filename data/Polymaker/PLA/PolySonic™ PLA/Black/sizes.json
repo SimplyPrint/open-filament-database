@@ -1,0 +1,29 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Filament-1-75mm-PolySonic-Printer/dp/B0C9TM3MYR?crid=1PR7TSB71KLD8&dib=eyJ2IjoiMSJ9.ZFTjZic9icjwFCrOdNGdcLZei2xZdXiuOzte4NZw7_f1_YnqXocM_YphNB-mWTKYc6BaNuuGvVk7z1D1Jg7ZCQRjYzs0s5tUUqGCKx_K4VADl3tSjG8zcsRdU85p-SZGzHeSDspJun6nXiXpUp_XthDqWmWrUVo8K37fUOPVoGP4UzaEYZcAuudL5EXit6mtSPmtubf4jGC1jCVG0yQN3U5P6L6mnv5npRj3m1-thbw.jJOclmqJX1zsno4N6sGSQe3YCB4zBBnnhxzotJwb134&dib_tag=se&keywords=polysonic%2Bpla&qid=1753023284&sprefix=polysonic%2Bpla%2Caps%2C220&sr=8-3&th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polysonic-pla?_pos=2&_psq=polysonic&_ss=e&_v=1.0",
+        "affiliate": false
+      }
+    ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 2.85,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Powerful-Rigidity-Filament-Cardboard/dp/B09LV83DK1?crid=23TUZ4W6ZAR0H&dib=eyJ2IjoiMSJ9.V53AE24M5ax5Rd6JGr6JyXt1WJhI0yhJ-0t29Rt0FFYHynfVJAI_YuDIvuS6eQoQ3BljtYY0FnTzHSgSe1fSjwkuOAXRw8Cn3ACStKpYvOG3O1YsFhq6e8s5_DXJWrSzlgAnTVD9F0KjL3kw3dTwoUGLHIYJR25cDmyubJNQkhKgARjdv8ryw0ohlryI-wSVK4IYJS187tBgEfbMv9pS_giIlXzkU_undhFTMmCnH0w.uav5bMzaAGE7l81U3YYiXs0h6o4QFYDSKZ1tCzatvWk&dib_tag=se&keywords=polysonic%2Bpla%2Bpro&qid=1753023307&sprefix=polysonic%2Bpla%2Bpro%2Caps%2C176&sr=8-9&th=1",
+        "affiliate": false
+      }
+    ]
+  }
+]

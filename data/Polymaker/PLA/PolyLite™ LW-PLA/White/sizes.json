@@ -1,0 +1,18 @@
+[
+  {
+    "filament_weight": 800,
+    "diameter": 1.75,
+    "purchase_links": [
+      {
+        "store_id": "amazon",
+        "url": "https://www.amazon.com/Polymaker-Weight-Filament-1-75mm-Density/dp/B09H2S3NLM?th=1",
+        "affiliate": false
+      },
+      {
+        "store_id": "polymaker",
+        "url": "https://us.polymaker.com/products/polylite-lw-pla?variant=39574342860857",
+        "affiliate": false
+      }
+    ]
+  }
+]
