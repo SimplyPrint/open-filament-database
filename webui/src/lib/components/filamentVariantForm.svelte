@@ -1,31 +1,15 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { invalidateAll } from '$app/navigation';
   import { env } from '$env/dynamic/public';
-  import { pseudoDelete, pseudoUndoDelete } from '$lib/pseudoDeleter';
   import { pseudoEdit } from '$lib/pseudoEditor';
-  import { realDelete } from '$lib/realDeleter';
+  import { invalidateAll } from '$app/navigation';
   import { booleanProxy } from 'sveltekit-superforms';
+  import { pseudoUndoDelete } from '$lib/pseudoDeleter';
+  import { redirect } from '@sveltejs/kit';
 
   type formType = 'edit' | 'create';
   let { form, errors, message, formType, brandName, materialName, filamentName } =
     $props();
-
-  async function handleDelete() {
-    if (
-      confirm(
-        `Are you sure you want to delete the filament "${$form.name}"? This action cannot be undone.`,
-      )
-    ) {
-      const isLocal = env.PUBLIC_IS_LOCAL === 'true';
-
-      if (isLocal) {
-        await realDelete('filament', $form.name, brandName, materialName);
-      } else {
-        pseudoDelete('filament', $form.name, brandName, materialName);
-      }
-    }
-  }
 
   // Proxies are needed for nested properties to work correctly with sveltekit-superforms
   const translucent = booleanProxy(form, 'traits.translucent');
@@ -58,7 +42,7 @@
     }
     $form.sizes = [
       ...$form.sizes,
-      { store_id: '', url: '', affiliate: false, ships_from: '', ships_to: '' },
+      { filament_weight: undefined, diameter: undefined },
     ];
   }
 
@@ -67,13 +51,23 @@
     $form.sizes = $form.sizes.filter((_, i) => i !== index);
   }
 
-  const enhancedSubmit = (formData: FormData) => {
+  const enhancedSubmit = ({ formData }) => {
     formData.set("serializedSizes", JSON.stringify($form.sizes));
+
+    if ($form.traits) {
+      let traitData = $form.traits;
+      // 🤷‍♀️ for some reason $form.traits all has the value of false, setting them to true as if they exist they should be
+      Object.keys(traitData).forEach((key: any) => {
+        traitData[key] = true;
+      });
+      formData.set("serializedTraits", JSON.stringify(traitData));
+    }
 
     return async ({ result, update }) => {
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
       if (result.type === 'success' && !isLocal) {
+
         const filamentData = {
           color_name: $form.color_name,
           color_hex: $form.color_hex,
@@ -81,14 +75,12 @@
           traits: $form.traits || {},
         };
         pseudoEdit('filament', brandName, filamentData, materialName, filamentName);
+        pseudoUndoDelete('filament', $form.name);
         await invalidateAll();
       }
 
-      if (isLocal) {
-        // Handle case!!
-        // await realDelete('brand', $form.brand);
-      } else {
-        pseudoUndoDelete('filament', $form.name);
+      if (result?.redirect) {
+        redirect(303, result.redirect);
       }
 
       await update();
@@ -100,7 +92,7 @@
   class="max-w-xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-4 text-gray-900 dark:text-gray-100">
   <form
     method="POST"
-    use:enhance={({formData}) => {enhancedSubmit(formData)}}
+    use:enhance={enhancedSubmit}
     action="?/instance"
     enctype="multipart/form-data"
     class="space-y-5">
@@ -116,7 +108,6 @@
       <input
         id="color_name"
         type="text"
-        name="color_name"
         required
         placeholder="e.g. Galaxy Black"
         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -136,7 +127,6 @@
         <input
           id="color_hex"
           type="color"
-          name="color_hex"
           aria-required="true"
           aria-describedby="color-hex-help"
           class="w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded cursor-pointer"
@@ -246,6 +236,9 @@
       </div>
     </fieldset>
 
+    {#if $form.sizes.length <= 0}
+      <span class="text-red-600 text-xs">You need at least one size</span>
+    {/if}
     <fieldset>
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-bold mb-4">{formType === 'edit' ? 'Edit' : 'Add'} Sizes<span class="text-red-500">*</span></h3>
@@ -401,13 +394,13 @@
                 <div>
                   <div class="flex flex-row items-center">
                     <input
-                    id="size_specific_discontinued"
+                    id="discontinued"
                     type="checkbox"
-                    name="size_specific_discontinued"
+                    name="discontinued"
                     class="accent-blue-600 w-4 h-4 mr-2"
-                    bind:checked={$form.sizes[sizesIndex].size_specific_discontinued} />
+                    bind:checked={$form.sizes[sizesIndex].discontinued} />
 
-                    <label for="size_specific_discontinued" class="inline-block font-medium">
+                    <label for="discontinued" class="inline-block font-medium">
                       Discontinued
                     </label>
                   </div>
@@ -415,8 +408,8 @@
                       Select if this size is discontinued 
                     </p>
                 </div>
-                {#if $errors.size_specific_discontinued}
-                  <span class="text-red-600 text-xs">{$errors.size_specific_discontinued}</span>
+                {#if $errors.discontinued}
+                  <span class="text-red-600 text-xs">{$errors.discontinued}</span>
                 {/if}
               </div>
 

@@ -4,6 +4,7 @@ import { fail, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { brandSchema } from '$lib/validation/filament-brand-schema';
 import { createMaterial, updateBrand } from '$lib/server/helpers';
+import { stripOfIllegalChars } from '$lib/globalHelpers';
 import { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
 import { refreshDatabase } from '$lib/dataCacher';
 import { setFlash } from 'sveltekit-flash-message/server';
@@ -59,7 +60,7 @@ export const actions = {
       return fail(500, { form });
     }
     setFlash({ type: 'success', message: 'Brand updated successfully!' }, cookies);
-    redirect(303, `/${form.data.brand}/`);
+    redirect(303, `/${stripOfIllegalChars(form.data.brand)}/`);
   },
   material: async ({ request, params, cookies }) => {
     const form = await superValidate(request, zod(filamentMaterialSchema));
@@ -69,7 +70,15 @@ export const actions = {
     }
 
     try {
-      await createMaterial(brand, form.data);
+      let submitData = form.data;
+      // Deserialize data after getting it from front end
+      submitData.generic = JSON.parse(submitData.serializedGeneric);
+      submitData.prusa = JSON.parse(submitData.serializedPrusa);
+      submitData.bambus = JSON.parse(submitData.serializedBambus);
+      submitData.orca = JSON.parse(submitData.serializedOrca);
+      submitData.cura = JSON.parse(submitData.serializedCura);
+
+      await createMaterial(brand, submitData);
       await refreshDatabase();
     } catch (error) {
       console.error('Failed to create material:', error);
@@ -77,6 +86,7 @@ export const actions = {
       return fail(500, { form });
     }
     setFlash({ type: 'success', message: 'Material created successfully!' }, cookies);
+    redirect(303, `/${brand}/${form.data.material}`);
     return { form, redirect: `/${brand}/${form.data.material}`, success: true };
   },
 };

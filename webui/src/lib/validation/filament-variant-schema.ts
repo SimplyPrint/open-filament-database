@@ -14,4 +14,5 @@ export const filamentVariantSchema = z.object({
   color_hex: z.string().regex(/^#?[a-fA-F0-9]{6}$/, 'Must be a valid hex code (#RRGGBB)'),
   discontinued: z.boolean().default(false),
   traits: traitsSchema.optional(),
+  serializedTraits: z.string(),
 });

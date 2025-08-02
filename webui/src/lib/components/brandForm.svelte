@@ -6,6 +6,7 @@
   import { pseudoEdit } from '$lib/pseudoEditor';
   import { realDelete } from '$lib/realDeleter';
   import { fileProxy } from 'sveltekit-superforms';
+  import { stripOfIllegalChars } from '$lib/globalHelpers';
   type formType = 'edit' | 'create';
   let { form, errors, constraints, delayed, message, formType, oldName = '' } = $props();
   const file = fileProxy(form, 'logo');
@@ -19,7 +20,7 @@
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
       if (isLocal) {
-        await realDelete('brand', $form.brand);
+        await realDelete('brand', stripOfIllegalChars($form.brand));
       } else {
         pseudoDelete('brand', $form.brand);
       }
@@ -33,33 +34,16 @@
       if (result.type === 'success' && !isLocal) {
         const brandData = {
           brand: $form.brand,
-          // Add other brand fields as needed
         };
 
         pseudoEdit('brand', $form.brand, brandData);
-        await invalidateAll();
-      }
-
-      if (isLocal) {
-        // Handle case!!
-        // await realDelete('brand', $form.brand);
-      } else {
         pseudoUndoDelete('brand', $form.brand);
+        await invalidateAll();
       }
 
       await update();
     };
   };
-
-  function setDefaultFormName() {
-    if (oldName != "" && $form.brand == "") {
-      $form.brand = oldName;
-    }
-  };
-
-  $effect(() => {
-    setDefaultFormName();
-  });
 </script>
 
 <div
@@ -85,7 +69,8 @@
         placeholder="e.g. Prusa"
         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-invalid={$errors.brand ? 'true' : undefined}
-        bind:value={$form.brand} />
+        bind:value={$form.brand} 
+        defaultValue={$form.brand ? $form.brand : ""} />
       {#if $errors.brand}
         <span class="text-red-600 text-xs">{$errors.brand}</span>
       {/if}

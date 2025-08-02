@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { fail, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -6,6 +6,7 @@ import { baseFilamentSchema, filamentSchema } from '$lib/validation/filament-sch
 import { createColorFiles, removeUndefined, updateFilament } from '$lib/server/helpers';
 import { setFlash } from 'sveltekit-flash-message/server';
 import { refreshDatabase } from '$lib/dataCacher';
+import { isValidJSON } from '$lib/globalHelpers';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
   const { brand, material, filament } = params;
@@ -79,23 +80,33 @@ export const actions = {
     try {
       let filteredData = removeUndefined(form.data);
 
-      let tempArr = JSON.parse(form.data.serializedSizes);
+      if (isValidJSON(form.data.serializedSizes)) {
+        let tempSizesArr = JSON.parse(filteredData.serializedSizes);
 
-      tempArr.filter((li, i) => {
-        Object.keys(li).forEach((key) => {
-          if (!li[key]) delete li[key];
+        Array.from(tempSizesArr).forEach((size, si) => {
+          Object.keys(size).forEach((key) => {
+            if (!size[key]) {
+              delete size[key];
+            }
+
+            if (size[key] === "") {
+              delete size[key];
+            }
+          });
+          
+          tempSizesArr[si] = size;
         });
 
-        if (li) {
-          tempArr[i] = li;
-          return false;
-        }
+        filteredData['sizes'] = tempSizesArr;
+      } else {
+        filteredData['sizes'] = [];
+      }
 
-        return true;
-      });
-
-      filteredData['sizes'] = tempArr;
-
+      if (isValidJSON(form.data.serializedTraits)) {
+        filteredData['traits'] = JSON.parse(filteredData.serializedTraits);
+      } else {
+        filteredData['traits'] = {};
+      }
       filteredData['brandName'] = brand;
       filteredData['materialName'] = material;
       filteredData['filamentName'] = filament;
@@ -110,6 +121,6 @@ export const actions = {
     }
 
     setFlash({ type: 'success', message: 'Color updated successfully!' }, cookies);
-    return { form, success: true };
+    return { form, type: 'success' };
   },
 };

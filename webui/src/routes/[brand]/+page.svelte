@@ -10,6 +10,7 @@
   import { browser } from '$app/environment';
   import { brandSchema } from '$lib/validation/filament-brand-schema';
   import { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
+  import { stripOfIllegalChars } from '$lib/globalHelpers.js';
   let { data }: PageProps = $props();
 
   const { form, errors, constraints, delayed, message, enhance } = superForm(data.brandForm, {
@@ -51,6 +52,11 @@
   });
 </script>
 
+<svelte:head>
+	<title>{data?.brandData?.brand ? data.brandData.brand : "Brand"}</title>
+	<meta name="description" content="This is an overview {data?.brandData?.brand ? data.brandData.brand : "a Brand"}"/>
+</svelte:head>
+
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   <div class="relative flex flex-col md:flex-row items-center md:items-start gap-6 mb-12">
     <img
@@ -89,14 +95,13 @@
         errors={materialErrors}
         message={materialMessage}
         brandName={data.brandData.brand}
-        overrideEnhance={materialEnhance}
         formType={'create'} />
     </CreateNew>
     <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#key [filteredMaterialKeys, data.brandData.materials]}
         {#each filteredMaterialKeys as materialKey}
           {#if data.brandData.materials[materialKey]}
-            <a href={`/${data.brandData.brand}/${materialKey}`}>
+            <a href={`/${stripOfIllegalChars(data.brandData.brand)}/${materialKey}`}>
               <li
                 class="border rounded p-4 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 shadow-md transition-colors flex flex-col justify-between">
                 <div>

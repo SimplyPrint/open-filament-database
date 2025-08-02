@@ -1,14 +1,15 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import { env } from '$env/dynamic/public';
   import { pseudoEdit } from '$lib/pseudoEditor';
   import { invalidateAll } from '$app/navigation';
-  import { booleanProxy, fieldProxy } from 'sveltekit-superforms';
+  import { goto } from '$app/navigation';
 
+  type formType = 'edit' | 'create';
   let {
     form,
     errors,
     message,
-    enhance,
     formType,
     brandName,
     materialName,
@@ -16,46 +17,87 @@
     colorName,
   } = $props();
 
-  // Proxies are needed for nested properties to work correctly with sveltekit-superforms
-  const translucent = booleanProxy(form, 'traits.translucent');
-  const glow = booleanProxy(form, 'traits.glow');
-  const matte = booleanProxy(form, 'traits.matte');
-  const recycled = booleanProxy(form, 'traits.recycled');
-  const recyclable = booleanProxy(form, 'traits.recyclable');
-  const biodegradable = booleanProxy(form, 'traits.biodegradable');
+  let traits = [
+    "translucent",
+    "glow",
+    "matte",
+    "recycled",
+    "recyclable",
+    "biodegradable",
+  ];
 
-  const enhancedSubmit = () => {
+  const enhancedSubmit = ({ formData }) => {
+    if ($form.traits) {
+      let traitData = $form.traits;
+      Object.keys(traitData).forEach((key) => {
+        if (!traitData[key]) {
+          delete traitData[key];
+        }
+      });
+      formData.set("serializedTraits", JSON.stringify(traitData));
+    }
+
     return async ({ result, update }) => {
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
-      if (result.type === 'success' && !isLocal) {
-        // For web version, apply pseudo edit after server returns
-        // Data is already in the correct nested format
-        const variantData = {
-          color_name: $form.color_name,
-          color_hex: $form.color_hex,
-          discontinued: $form.discontinued || undefined,
-          traits: $form.traits || {},
-        };
+      try {
+        if (result.type === 'success' && !isLocal) {
+          // For web version, apply pseudo edit after server returns
+          // Data is already in the correct nested format
+          const variantData = {
+            color_name: $form.color_name,
+            color_hex: $form.color_hex,
+            discontinued: $form.discontinued || undefined,
+            traits: $form.traits || {},
+          };
 
-        try {
-          pseudoEdit(
-            'color_variant',
-            brandName,
-            variantData,
-            materialName,
-            filamentName,
-            colorName,
-          );
-          await invalidateAll();
-        } catch (error) {
-          console.error('Pseudo edit failed:', error);
+          try {
+            pseudoEdit(
+              'color_variant',
+              brandName,
+              variantData,
+              materialName,
+              filamentName,
+              colorName,
+            );
+            await invalidateAll();
+          } catch (error) {
+            console.error('Pseudo edit failed:', error);
+          }
         }
-      }
 
-      await update();
+        if (result?.data?.redirect) {
+          setTimeout(() => {goto(result.data.redirect)}, 0);
+        }
+
+        await update();
+      } catch(e) {
+        console.error(e);
+      }
     };
   };
+
+  // Reactive statement to ensure sizes exists and updates
+  $effect(() => {
+    if (!$form.color_name) { 
+      if (!colorName) {
+        $form.color_name = "";
+      } else {
+        $form.color_name = colorName;
+      }
+    }
+
+    if (!$form.traits) {
+      $form.traits = {
+        translucent: false,
+        glow: false,
+        matte: false,
+        recycled: false,
+        recyclable: false,
+        biodegradable: false,
+      };
+    }
+  });
 </script>
 
 <div
@@ -77,7 +119,6 @@
       <input
         id="color_name"
         type="text"
-        name="color_name"
         required
         placeholder="Matte Black"
         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -97,7 +138,6 @@
         <input
           id="color_hex"
           type="color"
-          name="color_hex"
           aria-required="true"
           aria-describedby="color-hex-help"
           class="w-10 h-10 border-2 border-gray-300 dark:border-gray-600 rounded cursor-pointer"
@@ -134,9 +174,6 @@
             Select if this colour variant is discontinued 
           </p>
       </div>
-      {#if $errors.discontinued}
-        <span class="text-red-600 text-xs">{$errors.discontinued}</span>
-      {/if}
     </div>
 
     <fieldset>
@@ -145,65 +182,17 @@
         Select all special properties that apply to this filament variant
       </p>
       <div class="grid grid-cols-2 gap-4">
-        <div class="flex items-center gap-2">
-          <input
-            id="translucent"
-            type="checkbox"
-            name="traits.translucent"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$translucent} />
-          <label for="translucent" class="font-medium text-sm">Translucent</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            id="glow"
-            type="checkbox"
-            name="traits.glow"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$glow} />
-          <label for="glow" class="font-medium text-sm">Glow in dark</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            id="matte"
-            type="checkbox"
-            name="traits.matte"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$matte} />
-          <label for="matte" class="font-medium text-sm">Matte finish</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            id="recycled"
-            type="checkbox"
-            name="traits.recycled"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$recycled} />
-          <label for="recycled" class="font-medium text-sm">Recycled</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            id="recyclable"
-            type="checkbox"
-            name="traits.recyclable"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$recyclable} />
-          <label for="recyclable" class="font-medium text-sm">Recyclable</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            id="biodegradable"
-            type="checkbox"
-            name="traits.biodegradable"
-            class="accent-blue-600 w-4 h-4"
-            bind:checked={$biodegradable} />
-          <label for="biodegradable" class="font-medium text-sm">Biodegradable</label>
-        </div>
+        {#each Object.keys($form.traits) as trait}
+          <div class="flex items-center gap-2">
+            <input
+              id={trait}
+              type="checkbox"
+              name="traits.{trait}"
+              class="accent-blue-600 w-4 h-4"
+              bind:checked={$form.traits[trait]} />
+            <label for="translucent" class="font-medium text-sm">{trait}</label>
+          </div>
+        {/each}
       </div>
     </fieldset>
 

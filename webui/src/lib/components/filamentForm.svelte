@@ -26,24 +26,18 @@
   }
 
   const enhancedSubmit = () => {
+
     return async ({ result, update }) => {
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
       if (result.type === 'success' && !isLocal) {
         const filamentData = {
           name: $form.name,
-          // Add other filament fields as needed
         };
 
         pseudoEdit('filament', brandName, filamentData, materialName);
-        await invalidateAll();
-      }
-
-      if (isLocal) {
-        // Handle case!!
-        // await realDelete('brand', $form.brand);
-      } else {
         pseudoUndoDelete('filament', $form.name);
+        await invalidateAll();
       }
 
       await update();
@@ -140,7 +134,7 @@
         name="max_dry_temperature"
         aria-required="true"
         aria-describedby="max-dry-temperature-help"
-        placeholder="e.g. ±0.02mm"
+        placeholder="e.g. ±55-65°C"
         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-invalid={$errors.max_dry_temperature ? 'true' : undefined}
         bind:value={$form.max_dry_temperature} />

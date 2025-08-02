@@ -8,7 +8,6 @@
   import { isItemDeleted } from '$lib/pseudoDeleter.js';
   import { filamentMaterialSchema } from '$lib/validation/filament-material-schema.js';
   import { filamentVariantSchema } from '$lib/validation/filament-variant-schema';
-  import { filamentSizeSchema } from '$lib/validation/filament-size-schema';
   import { superForm } from 'sveltekit-superforms';
   import { zodClient } from 'sveltekit-superforms/adapters';
 
@@ -57,6 +56,11 @@
   });
 </script>
 
+<svelte:head>
+	<title>{data?.materialData?.material ? data.materialData.material : "Material"}</title>
+	<meta name="description" content="This is an overview of {data?.materialData?.material ? data.materialData.material : "a Material"}"/>
+</svelte:head>
+
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">
     Filaments for {data.materialData.material}
@@ -67,7 +71,6 @@
         form={materialForm}
         errors={materialErrors}
         message={materialMessage}
-        overrideEnhance={materialEnhance}
         brandName={data.brandData.brand}
         formType={'edit'} />
     </EditModal>
@@ -76,7 +79,6 @@
         form={filamentForm}
         errors={filamentErrors}
         message={filamentMessage}
-        enhance={filamentEnhance}
         brandName={data.brandData.brand}
         materialName={data.materialData.material}
         formType={'create'} />

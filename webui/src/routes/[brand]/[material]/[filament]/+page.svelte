@@ -8,6 +8,7 @@
   import { baseFilamentSchema, filamentSchema } from '$lib/validation/filament-schema.js';
   import { superForm } from 'sveltekit-superforms';
   import { zodClient } from 'sveltekit-superforms/adapters';
+  import { stripOfIllegalChars } from '$lib/globalHelpers.js';
 
   const { data } = $props();
   const colorKeys = Object.keys(data.filamentData.colors ?? {});
@@ -24,11 +25,17 @@
     message: filamentVariantMessage,
     enhance: filamentVariantEnhance,
   } = superForm(data.filamentVariantForm, {
+    dataType: 'json',
     resetForm: false,
     validationMethod: 'onblur',
     validators: zodClient(filamentSchema),
   });
 </script>
+
+<svelte:head>
+	<title>{data?.filamentData?.name ? data.filamentData.name : "Filament"}</title>
+	<meta name="description" content="This is an overview of {data?.filamentData?.name ? data.filamentData.name : "a Filament"}"/>
+</svelte:head>
 
 <section
   class="max-w-4xl mt-5 mx-auto px-4 py-12 bg-white dark:bg-gray-900 rounded-xl shadow text-gray-900 dark:text-gray-100">
@@ -41,7 +48,7 @@
       form={form}
       errors={errors}
       message={message}
-      brandName={data.brandData.brand}
+      brandName={stripOfIllegalChars(data.brandData.brand)}
       materialName={data.materialData.material}
       formType={'edit'} />
   </EditModal>
@@ -54,13 +61,13 @@
           form={filamentVariantForm}
           errors={filamentVariantErrors}
           message={filamentVariantMessage}
-          brandName={data.brandData.brand}
+          brandName={stripOfIllegalChars(data.brandData.brand)}
           materialName={data.materialData.material}
           filamentName={data.filamentData.name}
           formType={'create'} />
       </CreateNew>
       <DownloadBtn
-        brandName={data.brandData.brand}
+        brandName={stripOfIllegalChars(data.brandData.brand)}
         materialName={data.materialData.material}
         filamentName={data.filamentData.name} />
     </div>
@@ -69,7 +76,7 @@
       {#if data.filamentData.colors[colorKey]}
         <FilamentItem
           color={data.filamentData.colors[colorKey]}
-          brandName={data.brandData.brand}
+          brandName={stripOfIllegalChars(data.brandData.brand)}
           materialName={data.materialData.material}
           filamentName={data.filamentData.name} />
       {/if}

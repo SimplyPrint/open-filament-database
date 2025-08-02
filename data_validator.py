@@ -13,6 +13,12 @@ PathLike = Union[str, os.PathLike[str]]
 # This is used to for json validation error messages
 last_json_file_loaded = ""
 
+illegal_characters = [
+  "#","%","&","{","}","\\","<",
+  ">","*","?","/","$","!","'",
+  '"',":","@","+","`","|","="
+] # TODO: Add emojis and alt codes
+# This should at all times be the same as /webui/src/lib/server/helpers.ts:26
 
 def get_json_from_file(json_path: PathLike):
     """
@@ -155,9 +161,16 @@ def validate_folder_names():
             brand_data = get_json_from_file(brand_file)
             brand_name = cleanse_folder_name(brand_data.get("brand", ""))
             if _brand_dir.name != brand_name:
-                print("The name of the folder", _brand_dir,
-                      f"does not match the value of 'brand' ({brand_name}) of", brand_file.name)
-                failed_validation = True
+                is_error_illegal_char = False
+
+                for char in brand_name:
+                    if char in illegal_characters:
+                        is_error_illegal_char = True
+
+                if not is_error_illegal_char:
+                    print("The name of the folder", _brand_dir,
+                        f"does not match the value of 'brand' ({brand_name}) of", brand_file.name)
+                    failed_validation = True
 
         for _material_dir in _brand_dir.iterdir():
             if not _material_dir.is_dir():

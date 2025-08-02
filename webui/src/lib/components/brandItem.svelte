@@ -11,6 +11,6 @@
     class="w-20 h-20 mb-2 rounded-lg object-contain bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
     loading="lazy" />
   <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 text-center">
-    {brandName}
+    {brandData.brand}
   </h2>
 </a>

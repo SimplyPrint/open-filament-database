@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { stripOfIllegalChars } from '$lib/globalHelpers';
 export interface FilamentDatabase {
   brands: Record<string, Brand>;
 }
@@ -57,7 +58,8 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
 
     // Process all brands in parallel
     const brandPromises = brandDirents.map(async (brandFolder) => {
-      const brandPath = join(dataPath, brandFolder.name);
+      const folderName = stripOfIllegalChars(brandFolder.name)
+      const brandPath = join(dataPath, folderName);
       const brandJsonPath = join(brandPath, 'brand.json');
 
       if (!existsSync(brandJsonPath)) return null;
@@ -70,7 +72,7 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
 
       const brandData = JSON.parse(brandDataBuffer.toString());
       const logoFile = files.find((file) => /\.(png|jpg|jpeg|svg)$/i.test(file));
-      const logo = logoFile ? `/data/${brandFolder.name}/${logoFile}` : '';
+      const logo = logoFile ? `/data/${folderName}/${logoFile}` : '';
 
       // Get material folders
       const materialFolders = await readdir(brandPath, { withFileTypes: true });
@@ -171,9 +173,9 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
       });
 
       return {
-        key: brandFolder.name,
+        key: folderName,
         value: {
-          brand: brandData.brand ?? brandFolder.name,
+          brand: brandData?.brand ?? folderName,
           logo,
           website: brandData.website ?? '',
           origin: brandData.origin ?? '',

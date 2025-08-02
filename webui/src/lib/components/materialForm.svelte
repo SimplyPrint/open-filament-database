@@ -1,13 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { invalidateAll } from '$app/navigation';
   import { env } from '$env/dynamic/public';
   import { pseudoDelete, pseudoUndoDelete } from '$lib/pseudoDeleter';
   import { pseudoEdit } from '$lib/pseudoEditor';
   import { realDelete } from '$lib/realDeleter';
   import { intProxy } from 'sveltekit-superforms';
   type formType = 'edit' | 'create';
-  let { form, errors, constraints, delayed, message, overrideEnhance, formType, brandName } = $props();
+  let { form, errors, constraints, delayed, message, formType, brandName } = $props();
 
   async function handleDelete() {
     if (
@@ -25,7 +25,14 @@
     }
   }
 
-  const enhancedSubmit = () => {
+  const enhancedSubmit = ({ formData }) => {
+    // Serialize data for transmittance to back end
+    formData.set("serializedGeneric", JSON.stringify($form.generic));
+    formData.set("serializedPrusa", JSON.stringify($form.prusa));
+    formData.set("serializedBambus", JSON.stringify($form.bambus));
+    formData.set("serializedOrca", JSON.stringify($form.orca));
+    formData.set("serializedCura", JSON.stringify($form.cura));
+
     return async ({ result, update }) => {
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
@@ -33,6 +40,7 @@
         // Get the current form data
         const materialData = {
           material: $form.material,
+          default_max_dry_temperature: $form.default_max_dry_temperature,
           generic: $form.generic,
           prusa: $form.prusa,
           bambus: $form.bambus,
@@ -42,14 +50,8 @@
 
         // Apply pseudo edit for web version
         pseudoEdit('material', brandName, materialData);
-        await invalidateAll();
-      }
-
-      if (isLocal) {
-        // Handle case!!
-        // await realDelete('brand', $form.brand);
-      } else {
         pseudoUndoDelete('material', $form.material);
+        await invalidateAll();
       }
 
       await update();
@@ -72,32 +74,32 @@
   const generic_bt = intProxy(form, 'generic.bed_temp');
   const generic_nt = intProxy(form, 'generic.nozzle_temp');
 
-  const prusa_flbt = intProxy(form, 'prusa.prusa_overrides.first_layer_bed_temp');
-  const prusa_flnt = intProxy(form, 'prusa.prusa_overrides.first_layer_nozzle_temp');
-  const prusa_bt = intProxy(form, 'prusa.prusa_overrides.bed_temp');
-  const prusa_nt = intProxy(form, 'prusa.prusa_overrides.nozzle_temp');
+  const prusa_flbt = intProxy(form, 'prusa.first_layer_bed_temp');
+  const prusa_flnt = intProxy(form, 'prusa.first_layer_nozzle_temp');
+  const prusa_bt = intProxy(form, 'prusa.bed_temp');
+  const prusa_nt = intProxy(form, 'prusa.nozzle_temp');
 
-  const bambus_flbt = intProxy(form, 'bambus.bambus_overrides.first_layer_bed_temp');
-  const bambus_flnt = intProxy(form, 'bambus.bambus_overrides.first_layer_nozzle_temp');
-  const bambus_bt = intProxy(form, 'bambus.bambus_overrides.bed_temp');
-  const bambus_nt = intProxy(form, 'bambus.bambus_overrides.nozzle_temp');
+  const bambus_flbt = intProxy(form, 'bambus.first_layer_bed_temp');
+  const bambus_flnt = intProxy(form, 'bambus.first_layer_nozzle_temp');
+  const bambus_bt = intProxy(form, 'bambus.bed_temp');
+  const bambus_nt = intProxy(form, 'bambus.nozzle_temp');
 
-  const orca_flbt = intProxy(form, 'orca.orca_overrides.first_layer_bed_temp');
-  const orca_flnt = intProxy(form, 'orca.orca_overrides.first_layer_nozzle_temp');
-  const orca_bt = intProxy(form, 'orca.orca_overrides.bed_temp');
-  const orca_nt = intProxy(form, 'orca.orca_overrides.nozzle_temp');
+  const orca_flbt = intProxy(form, 'orca.first_layer_bed_temp');
+  const orca_flnt = intProxy(form, 'orca.first_layer_nozzle_temp');
+  const orca_bt = intProxy(form, 'orca.bed_temp');
+  const orca_nt = intProxy(form, 'orca.nozzle_temp');
 
-  const cura_flbt = intProxy(form, 'cura.cura_overrides.first_layer_bed_temp');
-  const cura_flnt = intProxy(form, 'cura.cura_overrides.first_layer_nozzle_temp');
-  const cura_bt = intProxy(form, 'cura.cura_overrides.bed_temp');
-  const cura_nt = intProxy(form, 'cura.cura_overrides.nozzle_temp');
+  const cura_flbt = intProxy(form, 'cura.first_layer_bed_temp');
+  const cura_flnt = intProxy(form, 'cura.first_layer_nozzle_temp');
+  const cura_bt = intProxy(form, 'cura.bed_temp');
+  const cura_nt = intProxy(form, 'cura.nozzle_temp');
 </script>
 
 <div
   class="max-w-md mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg p-8 text-gray-900 dark:text-gray-100">
   <form
     method="POST"
-    use:enhance={overrideEnhance ? enhancedSubmit : overrideEnhance}
+    use:enhance={enhancedSubmit}
     action="?/material"
     enctype="multipart/form-data"
     class="space-y-5">
@@ -120,6 +122,29 @@
         bind:value={$form.material} />
       {#if $errors.material}
         <span class="text-red-600 text-xs">{$errors.material}</span>
+      {/if}
+    </div>
+
+    <div>
+      <label for="max_dry_temperature" class="block font-medium mb-1"
+        >Default Max Dry Temperature</label>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+        Default Maximum drying temperature (typically somewhere around 55-65°C ) 
+      </p>
+      <input
+        id="default_max_dry_temperature"
+        type="number"
+        step="0.01"
+        name="default_max_dry_temperature"
+        aria-required="true"
+        aria-describedby="default-max-dry-temperature-help"
+        placeholder="e.g. ±55-65°C"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-invalid={$errors.default_max_dry_temperature ? 'true' : undefined}
+        bind:value={$form.default_max_dry_temperature} />
+
+      {#if $errors.default_max_dry_temperature}
+        <span class="text-red-600 text-xs">{$errors.default_max_dry_temperature}</span>
       {/if}
     </div>
 
@@ -208,7 +233,7 @@
                 name="prusa_profile_path"
                 placeholder="profiles/filament/PLA_Basic.ini"
                 class="w-full rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-1 text-sm"
-                bind:value={$form.prusa.prusa_profile_path} />
+                bind:value={$form.prusa.profile_name} />
             </div>
             <div>
               <p class="text-sm font-medium mb-2">Temperature Overrides</p>
@@ -275,7 +300,7 @@
                 name="bambus_profile_path"
                 placeholder="filament/PLA_Basic.json"
                 class="w-full rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-1 text-sm"
-                bind:value={$form.bambus.bambus_profile_path} />
+                bind:value={$form.bambus.profile_name} />
             </div>
             <div>
               <p class="text-sm font-medium mb-2">Temperature Overrides</p>
@@ -343,7 +368,7 @@
                 name="orca_profile_path"
                 placeholder="filament/PLA_Basic.json"
                 class="w-full rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-1 text-sm"
-                bind:value={$form.orca.orca_profile_path} />
+                bind:value={$form.orca.profile_name} />
             </div>
             <div>
               <p class="text-sm font-medium mb-2">Temperature Overrides</p>
@@ -410,7 +435,7 @@
                 name="cura_profile_path"
                 placeholder="materials/PLA_Basic.inst.cfg"
                 class="w-full rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-1 text-sm"
-                bind:value={$form.cura.cura_profile_path} />
+                bind:value={$form.cura.profile_name} />
             </div>
             <div>
               <p class="text-sm font-medium mb-2">Temperature Overrides</p>

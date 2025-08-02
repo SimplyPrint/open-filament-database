@@ -1,11 +1,13 @@
 import type { brandSchema } from '$lib/validation/filament-brand-schema';
 import { type z } from 'zod';
 
+import { error, fail } from '@sveltejs/kit';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
 import type { baseFilamentSchema } from '$lib/validation/filament-schema';
+import { stripOfIllegalChars, isEmptyObject, isValidJSON } from '$lib/globalHelpers';
 
 export const removeUndefined = (obj: any): any => {
   if (Array.isArray(obj)) {
@@ -25,7 +27,9 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, '../../../../data');
 
 export const createBrand = async (brandData: z.infer<typeof brandSchema>) => {
-  const brandDir = path.join(DATA_DIR, brandData.brand);
+  let folderName = stripOfIllegalChars(brandData.brand);
+
+  const brandDir = path.join(DATA_DIR, folderName);
   if (!fs.existsSync(brandDir)) {
     fs.mkdirSync(brandDir, { recursive: true });
   }
@@ -41,7 +45,7 @@ export const createBrand = async (brandData: z.infer<typeof brandSchema>) => {
     const buffer = Buffer.from(arrayBuffer);
     logoPath = path.join(brandDir, brandData.logo.name);
     fs.writeFileSync(logoPath, buffer);
-    logoUrl = `/data/${brandData.brand}/${brandData.logo.name}`;
+    logoUrl = `/data/${folderName}/${brandData.logo.name}`;
   }
 
   const brandJson = {
@@ -58,8 +62,8 @@ export const createBrand = async (brandData: z.infer<typeof brandSchema>) => {
 };
 
 export async function updateBrand(brandData: z.infer<typeof brandSchema>) {
-  const oldDir = path.join(DATA_DIR, brandData.oldBrandName || brandData.brand);
-  const newDir = path.join(DATA_DIR, brandData.brand);
+  const oldDir = path.join(DATA_DIR, stripOfIllegalChars(brandData.oldBrandName || brandData.brand));
+  const newDir = path.join(DATA_DIR, stripOfIllegalChars(brandData.brand));
 
   if (
     brandData.oldBrandName &&
@@ -67,7 +71,7 @@ export async function updateBrand(brandData: z.infer<typeof brandSchema>) {
     fs.existsSync(oldDir)
   ) {
     if (fs.existsSync(newDir)) {
-      throw new Error(`Brand folder "${brandData.brand}" already exists.`);
+      console.warn(`Brand folder "${brandData.brand}" already exists.`);
     }
     fs.renameSync(oldDir, newDir);
   } else if (!fs.existsSync(newDir)) {
@@ -106,7 +110,7 @@ export async function updateBrand(brandData: z.infer<typeof brandSchema>) {
   }
 
   const brandJson = {
-    name: brandData.brand,
+    brand: brandData.brand,
     website: brandData.website,
     logo: logoUrl,
     origin: brandData.origin,
@@ -146,13 +150,20 @@ export const createMaterial = async (
     throw error;
   }
 };
+
 function transformMaterialData(materialData: any) {
   const transformedData: any = {
     material: materialData.material,
   };
 
+  if (materialData.default_max_dry_temperature) {
+    transformedData.default_max_dry_temperature = materialData.default_max_dry_temperature;
+  }
+
+  let default_slicer_settings: any = {}
+
   // Handle generic settings - already in correct structure
-  if (materialData.generic) {
+  if (!isEmptyObject(materialData.generic)) {
     const genericSettings: any = {};
     if (
       materialData.generic.first_layer_bed_temp !== undefined &&
@@ -176,129 +187,126 @@ function transformMaterialData(materialData: any) {
       genericSettings.nozzle_temp = materialData.generic.nozzle_temp;
     }
     // Only add generic object if it has properties
-    if (Object.keys(genericSettings).length > 0) {
-      transformedData.generic = genericSettings;
+    if (!isEmptyObject(genericSettings)) {
+      default_slicer_settings.generic = genericSettings;
     }
   }
 
   // Handle PrusaSlicer settings
-  if (materialData.prusa) {
+  if (!isEmptyObject(materialData.prusa)) {
     const prusaSettings: any = {};
-    if (materialData.prusa.prusa_profile_path) {
-      prusaSettings.profile_path = materialData.prusa.prusa_profile_path;
+    if (materialData?.prusa?.profile_name) {
+      prusaSettings.profile_name = materialData?.prusa.profile_name;
     }
 
     // Handle prusa overrides
-    if (materialData.prusa.prusa_overrides) {
-      const overrides = materialData.prusa.prusa_overrides;
-      if (overrides.first_layer_bed_temp !== undefined) {
-        prusaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
-      }
-      if (overrides.first_layer_nozzle_temp !== undefined) {
-        prusaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
-      }
-      if (overrides.bed_temp !== undefined) {
-        prusaSettings.bed_temp = overrides.bed_temp;
-      }
-      if (overrides.nozzle_temp !== undefined) {
-        prusaSettings.nozzle_temp = overrides.nozzle_temp;
-      }
+    const overrides = materialData.prusa;
+    if (overrides.first_layer_bed_temp !== undefined) {
+      prusaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
+    }
+    if (overrides.first_layer_nozzle_temp !== undefined) {
+      prusaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
+    }
+    if (overrides.bed_temp !== undefined) {
+      prusaSettings.bed_temp = overrides.bed_temp;
+    }
+    if (overrides.nozzle_temp !== undefined) {
+      prusaSettings.nozzle_temp = overrides.nozzle_temp;
     }
 
+
     // Only add prusa object if it has properties
-    if (Object.keys(prusaSettings).length > 0) {
-      transformedData.prusa = prusaSettings;
+    if (!isEmptyObject(prusaSettings)) {
+      default_slicer_settings.prusa = prusaSettings;
     }
   }
 
   // Handle Bambu Studio settings
-  if (materialData.bambus) {
+  if (!isEmptyObject(materialData.bambus)) {
     const bambusSettings: any = {};
-    if (materialData.bambus.bambus_profile_path) {
-      bambusSettings.profile_path = materialData.bambus.bambus_profile_path;
+    if (materialData?.bambu?.profile_name !== undefined) {
+      bambusSettings.profile_name = materialData?.bambu.profile_name;
     }
 
     // Handle bambus overrides
-    if (materialData.bambus.bambus_overrides) {
-      const overrides = materialData.bambus.bambus_overrides;
-      if (overrides.first_layer_bed_temp !== undefined) {
-        bambusSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
-      }
-      if (overrides.first_layer_nozzle_temp !== undefined) {
-        bambusSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
-      }
-      if (overrides.bed_temp !== undefined) {
-        bambusSettings.bed_temp = overrides.bed_temp;
-      }
-      if (overrides.nozzle_temp !== undefined) {
-        bambusSettings.nozzle_temp = overrides.nozzle_temp;
-      }
+    const overrides = materialData?.bambus;
+    if (overrides.first_layer_bed_temp !== undefined) {
+      bambusSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
+    }
+    if (overrides.first_layer_nozzle_temp !== undefined) {
+      bambusSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
+    }
+    if (overrides.bed_temp !== undefined) {
+      bambusSettings.bed_temp = overrides.bed_temp;
+    }
+    if (overrides.nozzle_temp !== undefined) {
+      bambusSettings.nozzle_temp = overrides.nozzle_temp;
     }
 
     // Only add bambus object if it has properties
-    if (Object.keys(bambusSettings).length > 0) {
-      transformedData.bambus = bambusSettings;
+    if (!isEmptyObject(bambusSettings)) {
+      default_slicer_settings.bambus = bambusSettings;
     }
   }
 
   // Handle OrcaSlicer settings
-  if (materialData.orca) {
+  if (!isEmptyObject(materialData.orca)) {
     const orcaSettings: any = {};
-    if (materialData.orca.orca_profile_path) {
-      orcaSettings.profile_path = materialData.orca.orca_profile_path;
+    if (materialData?.orca.profile_name) {
+      orcaSettings.profile_name = materialData?.orca.profile_name;
     }
 
     // Handle orca overrides
-    if (materialData.orca.orca_overrides) {
-      const overrides = materialData.orca.orca_overrides;
-      if (overrides.first_layer_bed_temp !== undefined) {
-        orcaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
-      }
-      if (overrides.first_layer_nozzle_temp !== undefined) {
-        orcaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
-      }
-      if (overrides.bed_temp !== undefined) {
-        orcaSettings.bed_temp = overrides.bed_temp;
-      }
-      if (overrides.nozzle_temp !== undefined) {
-        orcaSettings.nozzle_temp = overrides.nozzle_temp;
-      }
+    const overrides = materialData?.orca;
+    if (overrides.first_layer_bed_temp !== undefined) {
+      orcaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
+    }
+    if (overrides.first_layer_nozzle_temp !== undefined) {
+      orcaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
+    }
+    if (overrides.bed_temp !== undefined) {
+      orcaSettings.bed_temp = overrides.bed_temp;
+    }
+    if (overrides.nozzle_temp !== undefined) {
+      orcaSettings.nozzle_temp = overrides.nozzle_temp;
     }
 
     // Only add orca object if it has properties
-    if (Object.keys(orcaSettings).length > 0) {
-      transformedData.orca = orcaSettings;
+    if (!isEmptyObject(orcaSettings)) {
+      default_slicer_settings.orca = orcaSettings;
     }
   }
 
   // Handle Cura settings
-  if (materialData.cura) {
+  if (!isEmptyObject(materialData.cura)) {
     const curaSettings: any = {};
-    if (materialData.cura.cura_profile_path) {
+    if (materialData?.cura.cura_profile_path) {
       curaSettings.profile_path = materialData.cura.cura_profile_path;
     }
 
     // Handle cura overrides
-    if (materialData.cura.cura_overrides) {
-      const overrides = materialData.cura.cura_overrides;
-      if (overrides.first_layer_bed_temp !== undefined) {
-        curaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
-      }
-      if (overrides.first_layer_nozzle_temp !== undefined) {
-        curaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
-      }
-      if (overrides.bed_temp !== undefined) {
-        curaSettings.bed_temp = overrides.bed_temp;
-      }
-      if (overrides.nozzle_temp !== undefined) {
-        curaSettings.nozzle_temp = overrides.nozzle_temp;
-      }
+    const overrides = materialData?.cura;
+    if (overrides.first_layer_bed_temp !== undefined) {
+      curaSettings.first_layer_bed_temp = overrides.first_layer_bed_temp;
+    }
+    if (overrides.first_layer_nozzle_temp !== undefined) {
+      curaSettings.first_layer_nozzle_temp = overrides.first_layer_nozzle_temp;
+    }
+    if (overrides.bed_temp !== undefined) {
+      curaSettings.bed_temp = overrides.bed_temp;
+    }
+    if (overrides.nozzle_temp !== undefined) {
+      curaSettings.nozzle_temp = overrides.nozzle_temp;
     }
 
     // Only add cura object if it has properties
-    if (Object.keys(curaSettings).length > 0) {
-      transformedData.cura = curaSettings;
+    if (!isEmptyObject(curaSettings)) {
+      default_slicer_settings.cura = curaSettings;
     }
+  }
+
+  if (!isEmptyObject(default_slicer_settings)) {
+    transformedData.default_slicer_settings = default_slicer_settings;
   }
 
   return transformedData;
@@ -342,6 +350,8 @@ export async function createColorFiles(formData: any) {
 
   if (!fs.existsSync(colorFolder)) fs.mkdirSync(colorFolder, { recursive: true });
 
+  // --- 2. Prepare sizes.json (list of objects) ---
+  // Traits are grouped under a "traits" object
   if (formData['sizes']) {
     const sizesPath = path.join(colorFolder, 'sizes.json');
     fs.writeFileSync(sizesPath, JSON.stringify(formData['sizes'], null, 2), 'utf-8');
@@ -351,7 +361,7 @@ export async function createColorFiles(formData: any) {
   const traitKeys = ['translucent', 'glow', 'matte', 'recycled', 'recyclable', 'biodegradable'];
   const traits: Record<string, boolean> = {};
   for (const key of traitKeys) {
-    if (formData[key] !== undefined) traits[key] = formData[key];
+    if (formData?.traits[key] !== undefined) traits[key] = formData.traits[key];
   }
 
   // Only include traits if at least one is present
@@ -365,6 +375,7 @@ export async function createColorFiles(formData: any) {
   // Add any additional fields you want in variant.json
   if (formData.data_sheet_url) variantObj.data_sheet_url = formData.data_sheet_url;
   if (formData.safety_sheet_url) variantObj.safety_sheet_url = formData.safety_sheet_url;
+  if (formData.discontinued) variantObj.discontinued = formData.discontinued;
 
   fs.writeFileSync(
     path.join(colorFolder, 'variant.json'),
@@ -535,26 +546,32 @@ function transformFilamentData(filamentData: any) {
   if (filamentData.density !== undefined) {
     transformedData.density = filamentData.density;
   }
+  if (filamentData.max_dry_temperature !== undefined) {
+    transformedData.max_dry_temperature = filamentData.max_dry_temperature;
+  }
   if (filamentData.data_sheet_url !== undefined) {
     transformedData.data_sheet_url = filamentData.data_sheet_url;
   }
   if (filamentData.safety_sheet_url !== undefined) {
     transformedData.safety_sheet_url = filamentData.safety_sheet_url;
   }
+  if (filamentData.discontinued !== undefined) {
+    transformedData.discontinued = filamentData.discontinued;
+  }
 
-  // Add slicer profile paths if they exist
-  if (filamentData.prusa_profile_path !== undefined) {
-    transformedData.prusa_profile_path = filamentData.prusa_profile_path;
-  }
-  if (filamentData.bambus_profile_path !== undefined) {
-    transformedData.bambus_profile_path = filamentData.bambus_profile_path;
-  }
-  if (filamentData.orca_profile_path !== undefined) {
-    transformedData.orca_profile_path = filamentData.orca_profile_path;
-  }
-  if (filamentData.cura_profile_path !== undefined) {
-    transformedData.cura_profile_path = filamentData.cura_profile_path;
-  }
+  // // Add slicer profile paths if they exist
+  // if (filamentData.prusa_profile_path !== undefined) {
+  //   transformedData.prusa_profile_path = filamentData.prusa_profile_path;
+  // }
+  // if (filamentData.bambus_profile_path !== undefined) {
+  //   transformedData.bambus_profile_path = filamentData.bambus_profile_path;
+  // }
+  // if (filamentData.orca_profile_path !== undefined) {
+  //   transformedData.orca_profile_path = filamentData.orca_profile_path;
+  // }
+  // if (filamentData.cura_profile_path !== undefined) {
+  //   transformedData.cura_profile_path = filamentData.cura_profile_path;
+  // }
 
   return removeUndefined(transformedData);
 }
@@ -633,6 +650,8 @@ export async function updateColorVariant(
     const traitKeys = ['translucent', 'glow', 'matte', 'recycled', 'recyclable', 'biodegradable'];
     const traits: Record<string, boolean> = {};
 
+    console.log(variantData);
+
     for (const key of traitKeys) {
       if (variantData[key] !== undefined) {
         traits[key] = variantData[key];
@@ -652,9 +671,7 @@ export async function updateColorVariant(
     // Add optional fields
     if (variantData.data_sheet_url) variantObj.data_sheet_url = variantData.data_sheet_url;
     if (variantData.safety_sheet_url) variantObj.safety_sheet_url = variantData.safety_sheet_url;
-    if (variantData.url) variantObj.url = variantData.url;
-    if (variantData.affiliate !== undefined) variantObj.affiliate = variantData.affiliate;
-    if (variantData.sku) variantObj.sku = variantData.sku;
+    if (variantData.discontinued) variantObj.discontinued = variantData.discontinued;
 
     // Check if the color name has changed and requires folder rename
     if (variantData.color_name !== colorName) {
@@ -703,7 +720,7 @@ export async function updateColorSize(
   materialName: string,
   filamentName: string,
   colorName: string,
-  sizeData: any,
+  sizeData: Object,
 ) {
   const colorDir = path.join(DATA_DIR, brandName, materialName, filamentName, colorName);
 
@@ -713,38 +730,8 @@ export async function updateColorSize(
 
   try {
     const sizesPath = path.join(colorDir, 'sizes.json');
-
-    // Prepare size object
-    const sizeObj: any = {};
-
-    // Map form fields to JSON structure
-    if (sizeData.filament_weight !== undefined) sizeObj.filament_weight = sizeData.filament_weight;
-    if (sizeData.empty_spool_weight !== undefined)
-      sizeObj.empty_spool_weight = sizeData.empty_spool_weight;
-    if (sizeData.diameter !== undefined) sizeObj.diameter = sizeData.diameter;
-    if (sizeData.spool_refill !== undefined) sizeObj.spool_refill = sizeData.spool_refill;
-    if (sizeData.sku !== undefined) sizeObj.sku = sizeData.sku;
-    if (sizeData.ean !== undefined) sizeObj.ean = sizeData.ean;
-
-    // Handle purchase links if provided
-    if (sizeData.store_id || sizeData.url || sizeData.ships_from || sizeData.ships_to) {
-      const purchaseLink: any = {};
-      if (sizeData.store_id) purchaseLink.store_id = sizeData.store_id;
-      if (sizeData.url) purchaseLink.url = sizeData.url;
-      if (sizeData.affiliate !== undefined) purchaseLink.affiliate = sizeData.affiliate;
-      if (sizeData.ships_from) purchaseLink.ships_from = sizeData.ships_from;
-      if (sizeData.ships_to) purchaseLink.ships_to = sizeData.ships_to;
-
-      if (Object.keys(purchaseLink).length > 0) {
-        sizeObj.purchase_links = [purchaseLink];
-      }
-    }
-
-    // Always create or update the single size object
-    const sizesArr = [removeUndefined(sizeObj)];
-
-    fs.writeFileSync(sizesPath, JSON.stringify(sizesArr, null, 2), 'utf-8');
-    console.log(`Size updated: ${brandName}/${materialName}/${filamentName}/${colorName}`);
+    // Yes we're just dumping raw JSON to a file.
+    fs.writeFileSync(sizesPath, JSON.stringify(sizeData, null, 2), 'utf-8');
   } catch (error) {
     console.error('Error updating color size:', error);
     throw error;
