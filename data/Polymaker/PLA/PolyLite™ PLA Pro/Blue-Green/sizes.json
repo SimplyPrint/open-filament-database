@@ -1,0 +1,26 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75
+  },
+  {
+    "filament_weight": 3000,
+    "diameter": 1.75
+  },
+  {
+    "filament_weight": 5000,
+    "diameter": 1.75
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 2.85
+  },
+  {
+    "filament_weight": 3000,
+    "diameter": 2.85
+  },
+  {
+    "filament_weight": 5000,
+    "diameter": 2.85
+  }
+]
