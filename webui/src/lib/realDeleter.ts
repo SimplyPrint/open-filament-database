@@ -1,7 +1,7 @@
 import { goto } from '$app/navigation';
 
 export async function realDelete(
-  type: 'brand' | 'material' | 'filament' | 'instance',
+  type: 'brand' | 'material' | 'filament' | 'instance' | 'shop',
   name: string,
   brandName?: string,
   materialName?: string,

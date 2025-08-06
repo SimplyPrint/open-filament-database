@@ -3,7 +3,7 @@
   
   let { filament, filamentKey, brandName, materialName } = $props();
 </script>
-<a href={`/${stripOfIllegalChars(brandName)}/${materialName}/${filamentKey}`}>
+<a href={`/Brand/${stripOfIllegalChars(brandName)}/${materialName}/${filamentKey}`}>
 <div class="border rounded p-4 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 transition-colors shadow-md">
   <div class="flex items-center justify-between mb-2">
     <h2 class="text-xl font-semibold">{filament.name ?? filamentKey}</h2>

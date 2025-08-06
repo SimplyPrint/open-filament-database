@@ -1,6 +1,5 @@
-import { createBrand } from '$lib/server/helpers';
 import { stripOfIllegalChars } from '$lib/globalHelpers';
-import { brandSchema } from '$lib/validation/filament-brand-schema';
+import { storeSchema } from '$lib/validation/store-schema.js';
 import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -8,20 +7,26 @@ import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { refreshDatabase } from '$lib/dataCacher';
 
 export const load = async () => {
-  const form = await superValidate(zod(brandSchema));
+  const form = await superValidate(zod(storeSchema));
+ 
+  console.log(form);
+
   return { form };
 };
 
 export const actions = {
-  brand: async ({ request, cookies }) => {
-    const form = await superValidate(request, zod(brandSchema));
+  store: async ({ request, cookies }) => {
+    const form = await superValidate(request, zod(storeSchema));
+
+    console.log(form);
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
     try {
-      await createBrand(form.data);
+      // IMPLEMENT FRIDAAAAAAAAAAAAA
+      //await createBrand(form.data);
       await refreshDatabase();
     } catch (error) {
       console.error('Failed to create brand:', error);

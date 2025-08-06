@@ -4,6 +4,7 @@ import { browser } from '$app/environment';
 import path from 'node:path';
 import type { FilamentDatabase } from './jsonParser';
 import { isItemDeleted } from './pseudoDeleter';
+import { env } from '$env/dynamic/public';
 
 let cachedDatabase: FilamentDatabase | null = null;
 let loadingPromise: Promise<FilamentDatabase> | null = null;
@@ -27,9 +28,10 @@ export async function getFilamentDatabase(): Promise<FilamentDatabase> {
 }
 
 async function loadDatabase(): Promise<FilamentDatabase> {
-  const dataPath = path.resolve('../data');
-  console.log(`Loading database from: ${dataPath}`);
-  return await loadFilamentDatabase(dataPath);
+  const dataPath = path.resolve(env.PUBLIC_DATA_PATH);
+  const storesPath = path.resolve(env.PUBLIC_STORES_PATH);
+  console.log(`Loading database from: ${dataPath} and stores from ${storesPath}`);
+  return await loadFilamentDatabase(dataPath, storesPath);
 }
 
 function applyPseudoEdits(database: FilamentDatabase): FilamentDatabase {

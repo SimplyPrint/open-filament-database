@@ -1,13 +1,12 @@
 import type { brandSchema } from '$lib/validation/filament-brand-schema';
 import { type z } from 'zod';
 
-import { error, fail } from '@sveltejs/kit';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
 import type { filamentSchema } from '$lib/validation/filament-schema';
-import { stripOfIllegalChars, isEmptyObject, isValidJSON } from '$lib/globalHelpers';
+import { stripOfIllegalChars, isEmptyObject } from '$lib/globalHelpers';
 import { env } from '$env/dynamic/public';
 
 export const removeUndefined = (obj: any): any => {
@@ -19,7 +18,7 @@ export const removeUndefined = (obj: any): any => {
         .filter(([_, v]) => v !== undefined)
         .filter(([_, v]) => v !== "null")
         .filter(([_, v]) => v !== null)
-        .filter(([_, v]) => v.length !== 0)
+        .filter(([_, v]) => v?.length !== 0)
         .filter(([_, v]) => v)
         .map(([k, v]) => [k, removeUndefined(v)]),
     );

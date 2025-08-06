@@ -3,7 +3,7 @@
 </script>
 
 <a
-  href={`/${brandName}`}
+  href={`/Brand/${brandName}`}
   class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 space-y-4 w-48 border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-gray-900">
   <img
     src={brandData.logo}

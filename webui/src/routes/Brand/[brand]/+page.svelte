@@ -1,14 +1,10 @@
 <script lang="ts">
   import BrandForm from '$lib/components/forms/brand/brandForm.svelte';
   import EditModal from '$lib/components/editModal.svelte';
-  import { superForm } from 'sveltekit-superforms';
-  import { zodClient } from 'sveltekit-superforms/adapters';
   import type { PageProps } from './$types';
   import MaterialForm from '$lib/components/forms/material/materialForm.svelte';
   import { isItemDeleted } from '$lib/pseudoDeleter';
   import { browser } from '$app/environment';
-  import { brandSchema } from '$lib/validation/filament-brand-schema';
-  import { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
   import { stripOfIllegalChars } from '$lib/globalHelpers.js';
   let { data }: PageProps = $props();
 
@@ -87,7 +83,7 @@
       {#key [filteredMaterialKeys, data.brandData.materials]}
         {#each filteredMaterialKeys as materialKey}
           {#if data.brandData.materials[materialKey]}
-            <a href={`/${stripOfIllegalChars(data.brandData.brand)}/${materialKey}`}>
+            <a href={`/Brand/${stripOfIllegalChars(data.brandData.brand)}/${materialKey}`}>
               <li
                 class="border rounded p-4 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 shadow-md transition-colors flex flex-col justify-between">
                 <div>

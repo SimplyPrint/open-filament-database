@@ -11,7 +11,7 @@
   class="border rounded p-4 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 transition-colors relative">
   <div class="absolute top-2 right-2">
     <a
-      href={`/${brandName}/${materialName}/${filamentName}/${color.name}`}
+      href={`/Brand/${brandName}/${materialName}/${filamentName}/${color.name}`}
       class="flex items-center gap-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900 dark:hover:text-green-300 shadow transition-colors"
       title="Edit {color.name}">
       <svg

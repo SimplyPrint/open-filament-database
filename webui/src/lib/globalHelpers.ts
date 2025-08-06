@@ -77,7 +77,7 @@ Error: Unsupported file type in Node.js (must be Buffer or Uint8Array)
     at getImageDimensions (D:/SP/open-filament-database/webui/src/lib/globalHelpers.ts:85:13)
 
 Node.js v24.5.0
-*/
+
 export const getImageDimensions = async (file) => {
   if (!browser) {
     // Use 'sharp' in Node.js
@@ -114,3 +114,4 @@ export const getImageDimensions = async (file) => {
     });
   }
 }
+*/
