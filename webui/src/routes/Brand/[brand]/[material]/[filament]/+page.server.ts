@@ -68,7 +68,7 @@ export const actions = {
     }
 
     setFlash({ type: 'success', message: 'Filament updated successfully!' }, cookies);
-    throw redirect(303, `/${stripOfIllegalChars(brand)}/${material}/${form.data.name}`);
+    throw redirect(303, `/Brand/${stripOfIllegalChars(brand)}/${material}/${form.data.name}`);
   },
   variant: async ({ request, params, cookies }) => {
     let data = await request.formData();
@@ -96,6 +96,6 @@ export const actions = {
     }
 
     setFlash({ type: 'success', message: 'Color updated successfully!' }, cookies);
-    throw redirect(303, `/${stripOfIllegalChars(brand)}/${material}/${filament}/${form.data.color_name}`);
+    throw redirect(303, `/Brand/${stripOfIllegalChars(brand)}/${material}/${filament}/${form.data.color_name}`);
   },
 };

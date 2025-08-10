@@ -1,44 +1,66 @@
 <script>
-  import { superForm } from 'sveltekit-superforms';
-  import BrandForm from '$lib/components/forms/brand/brandForm.svelte';
-  import BrandItem from '$lib/components/items/brandItem.svelte';
-  import EditModal from '$lib/components/editModal.svelte';
-  import { zodClient } from 'sveltekit-superforms/adapters';
-  import { brandSchema } from '$lib/validation/filament-brand-schema.js';
-  import { browser } from '$app/environment';
-  import { stripOfIllegalChars } from '$lib/globalHelpers';
-  import { isItemDeleted } from '$lib/pseudoDeleter.js';
+  import SectionsItem from "$lib/components/items/sectionsItem.svelte";
   const { data } = $props();
 
-  const filamentData = $derived(data.filamentData);
+  let filamentData = data.filamentData;
 
-  const filteredBrands = $derived(
-    !browser || !filamentData?.brands
-      ? {}
-      : Object.fromEntries(
-          Object.entries(filamentData.brands).filter(([brand]) => !isItemDeleted('brand', stripOfIllegalChars(brand))),
-        ),
-  );
+  let brandImages = [], storeImages = [];
+
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+  }
+
+  function getRandomImage(dict, arr) {
+    let index = getRandomInt(Object.keys(filamentData.brands).length - 1);
+    let brandKey = Object.keys(filamentData.brands)[index];
+    let brand = filamentData.brands[brandKey];
+    
+    if (!arr.includes(brand.logo)) {
+      return brand.logo;
+    } else {
+      brandKey = Object.keys(filamentData.brands)[index + 1];
+      return filamentData.brands[brandKey].logo;
+    }
+  }
+
+  for(let i = 0; i < 3; i++){
+    brandImages[i] = getRandomImage(filamentData.brands, brandImages);
+    storeImages[i] = getRandomImage(filamentData.stores, storeImages);
+  }
+
+  /*let firstBrands = Object.keys(filamentData.brands).slice(0, 3);
+  firstBrands.forEach((value, index) => {
+    let brand = filamentData.brands[value];
+    brandImages[index] = brand.logo
+  });
+  let firstStores = Object.keys(filamentData.stores).slice(0, 3);
+  firstStores.forEach((value, index) => {
+    let store = filamentData.stores[value];
+    storeImages[index] = store.logo
+  });*/
 </script>
 
 <svelte:head>
-	<title>Brands</title>
-	<meta name="description" content="This is a overview of the brands"/>
+	<title>WebUI Landing</title>
+	<meta name="description" content="This is a overview of the sections of the webui"/>
 </svelte:head>
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 text-center">Brands</h1>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-screen flex-col">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">Open Filament Database WebUI</h1>
+  <p class="mb-8 text-center">Hello and welcome to our WebUI, below you can select whether you'd like to edit our brands or stores.</p>
 
-  <EditModal
-    externalStyling="bg-blue-500 hover:bg-blue-700 border border-gray-300 dark:border-gray-700 mb-4 rounded-lg shadow transition-colors"
-    btnType={'create'}
-    spanText="Add brand"
-  >
-    <BrandForm defaultForm={data.form} formType={'create'} />
-  </EditModal>
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {#each Object.entries(filteredBrands) as [brandName, brandData]}
-      <BrandItem {brandName} {brandData} />
-    {/each}
+  <div class="flex w-full aspect-3/1 space-x-4">
+    <SectionsItem
+      link="/Brand/"
+      title="Filament Brands"
+      images={brandImages}
+    />
+
+    <SectionsItem
+      link="/Store/"
+      title="Filament Storefronts"
+      images={storeImages}
+    />
   </div>
+
 </section>

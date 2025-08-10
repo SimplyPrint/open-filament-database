@@ -1,14 +1,11 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
   import { env } from '$env/dynamic/public';
-  import { pseudoDelete, pseudoUndoDelete } from '$lib/pseudoDeleter';
-  import { pseudoEdit } from '$lib/pseudoEditor';
+  import { pseudoDelete, } from '$lib/pseudoDeleter';
   import { realDelete } from '$lib/realDeleter';
   import { intProxy } from 'sveltekit-superforms';
   import Form from '../components/form.svelte';
   import TextField from '../components/textField.svelte';
   import NumberField from '../components/numberField.svelte';
-  import SlicerSetting from './components/slicerSetting.svelte';
   import SubmitButton from '../components/submitButton.svelte';
   import DeleteButton from '../components/deleteButton.svelte';
   import { superForm } from 'sveltekit-superforms';

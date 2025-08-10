@@ -1,14 +1,10 @@
 <script lang="ts">
   import BrandForm from '$lib/components/forms/brand/brandForm.svelte';
   import EditModal from '$lib/components/editModal.svelte';
-  import { superForm } from 'sveltekit-superforms';
-  import { zodClient } from 'sveltekit-superforms/adapters';
   import type { PageProps } from './$types';
   import MaterialForm from '$lib/components/forms/material/materialForm.svelte';
   import { isItemDeleted } from '$lib/pseudoDeleter';
   import { browser } from '$app/environment';
-  import { brandSchema } from '$lib/validation/filament-brand-schema';
-  import { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
   import { stripOfIllegalChars } from '$lib/globalHelpers.js';
   let { data }: PageProps = $props();
 
@@ -41,7 +37,7 @@
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   <div class="relative flex flex-col md:flex-row items-center md:items-start gap-6 mb-12">
     <img
-      src={data.brandData.logo}
+      src={`/data/${stripOfIllegalChars(data.brandData.brand)}/${data.brandData.logo}`}
       alt={data.brandData.brand ?? 'Brand logo'}
       class="w-32 h-32 rounded-xl object-contain bg-white shadow-md dark:bg-gray-900" />
     
@@ -87,7 +83,7 @@
       {#key [filteredMaterialKeys, data.brandData.materials]}
         {#each filteredMaterialKeys as materialKey}
           {#if data.brandData.materials[materialKey]}
-            <a href={`/${stripOfIllegalChars(data.brandData.brand)}/${materialKey}`}>
+            <a href={`/Brand/${stripOfIllegalChars(data.brandData.brand)}/${materialKey}`}>
               <li
                 class="border rounded p-4 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 shadow-md transition-colors flex flex-col justify-between">
                 <div>

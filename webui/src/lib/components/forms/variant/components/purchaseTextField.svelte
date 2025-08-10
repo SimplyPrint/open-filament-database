@@ -1,8 +1,8 @@
 <script>
-  export let id, title, placeholder, formVar, errorVar = null, required = false;;
+  export let id, title, placeholder, formVar, errorVar = null, required = false, classes;
 </script>
 
-<div>
+<div class={classes}>
   <label for={id} class="block font-medium mb-1 text-sm">
     {title}
     {#if required}

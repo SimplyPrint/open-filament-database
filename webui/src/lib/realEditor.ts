@@ -1,12 +1,3 @@
-import { goto } from '$app/navigation';
-import {
-  updateBrand,
-  updateMaterial,
-  updateFilament,
-  updateColorVariant,
-  updateColorSize,
-} from '$lib/server/helpers';
-
 export async function realEdit(
   type: 'brand' | 'material' | 'filament' | 'color_variant' | 'color_size',
   brandName: string,

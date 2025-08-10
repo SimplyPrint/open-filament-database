@@ -7,7 +7,7 @@ export interface DeletedItem {
 }
 
 export const pseudoDelete = (
-  type: 'brand' | 'material' | 'filament' | 'instance',
+  type: 'brand' | 'material' | 'filament' | 'instance' | 'store',
   name: string,
   brandName?: string,
   materialName?: string,

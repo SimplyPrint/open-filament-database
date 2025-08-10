@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { stripOfIllegalChars } from '$lib/globalHelpers';
 export interface FilamentDatabase {
   brands: Record<string, Brand>;
+  stores: Record<string, Store>;
 }
 
 interface Brand {
@@ -12,6 +13,16 @@ interface Brand {
   website?: string;
   origin?: string;
   materials: Record<string, Material>;
+}
+
+interface Store {
+  id: string;
+  name: string;
+  storefront_url: string;
+  affiliate: boolean;
+  logo: string;
+  ships_from: string[];
+  ships_to: string[];
 }
 
 interface Material {
@@ -47,10 +58,13 @@ interface Variant {
   [key: string]: any;
 }
 
-export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDatabase> {
+const allowedImageTypes = "png|jpg|jpeg|svg";
+
+export async function loadFilamentDatabase(dataPath: string, storesPath: string): Promise<FilamentDatabase> {
   console.log('Running optimized parser!');
   const startMem = process.memoryUsage().heapUsed;
   const brands: Record<string, Brand> = {};
+  const stores: Record<string, Store> = {};
 
   try {
     const brandFolders = await readdir(dataPath, { withFileTypes: true });
@@ -71,8 +85,8 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
       ]);
 
       const brandData = JSON.parse(brandDataBuffer.toString());
-      const logoFile = files.find((file) => /\.(png|jpg|jpeg|svg)$/i.test(file));
-      const logo = logoFile ? `/data/${folderName}/${logoFile}` : '';
+      const logoFile = files.find((file) => /\.(png|jpg|jpeg|svg|webp)$/i.test(file));
+      const logo = logoFile ? logoFile : '';
 
       // Get material folders
       const materialFolders = await readdir(brandPath, { withFileTypes: true });
@@ -189,6 +203,46 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
     brandResults.forEach((result) => {
       if (result) brands[result.key] = result.value;
     });
+
+    const storesFolders = await readdir(storesPath, { withFileTypes: true });
+    const storesDirents = storesFolders.filter((dirent) => dirent.isDirectory());
+
+    const storesPromises = storesDirents.map(async (storeFolder) => {
+      const folderName = storeFolder.name;
+      const storePath = join(storesPath, folderName);
+      const storeJsonPath = join(storePath, "store.json")
+
+      if (!existsSync(storeJsonPath)) return null;
+
+      // Read store data and find logo in parallel
+      const [storeDataBuffer, files] = await Promise.all([
+        readFile(storeJsonPath),
+        readdir(storePath),
+      ]);
+      
+      const storeData = JSON.parse(storeDataBuffer.toString());
+      const logoFile = files.find((file) => /\.(png|jpg|jpeg|svg|webp)$/i.test(file));
+      const logo = logoFile ? logoFile : '';
+
+      return {
+        key: folderName,
+        value: {
+          id: storeData?.id ?? folderName,
+          name: storeData?.name ?? folderName,
+          storefront_url: storeData?.storefront_url ?? '',
+          affiliate: storeData?.affiliate ?? '',
+          logo,
+          ships_from: storeData?.ships_from ?? [],
+          ships_to: storeData?.ships_to ?? [],
+        },
+      };
+    });
+
+    const storeResults = await Promise.all(storesPromises);
+
+    storeResults.forEach((result) => {
+      if (result) stores[result.key] = result.value;
+    });
   } catch (error) {
     console.error('Error loading filament database:', error);
     throw error;
@@ -201,5 +255,5 @@ export async function loadFilamentDatabase(dataPath: string): Promise<FilamentDa
       1024
     ).toFixed(2)} MB delta)`,
   );
-  return { brands };
+  return { brands, stores };
 }

@@ -11,7 +11,9 @@
   import SubmitButton from '../components/submitButton.svelte';
   import { superForm } from 'sveltekit-superforms';
   import { zodClient } from 'sveltekit-superforms/adapters';
-  import { brandSchema } from '$lib/validation/filament-brand-schema';
+  import { storeSchema } from '$lib/validation/store-schema';
+  import BigCheck from '../components/bigCheck.svelte';
+  import ShippingList from './components/shippingList.svelte';
 
   type formType = 'edit' | 'create';
   let { defaultForm, formType } = $props();
@@ -27,7 +29,7 @@
     invalidateAll: false,
     clearOnSubmit: "none",
     validationMethod: 'onblur',
-    validators: zodClient(brandSchema),
+    validators: zodClient(storeSchema),
     onResult: ({ result}) => {
       console.log(result);
     }
@@ -38,52 +40,61 @@
   async function handleDelete() {
     if (
       confirm(
-        `Are you sure you want to delete the brand "${$form.brand}"? This action cannot be undone.`,
+        `Are you sure you want to delete the brand "${$form.name}"? This action cannot be undone.`,
       )
     ) {
       const isLocal = env.PUBLIC_IS_LOCAL === 'true';
 
       if (isLocal) {
-        await realDelete('brand', stripOfIllegalChars($form.brand));
+        await realDelete('store', stripOfIllegalChars($form.name));
       } else {
-        pseudoDelete('brand', $form.brand);
+        pseudoDelete('store', $form.name);
       }
     }
   }
 </script>
 
 <Form
-  endpoint="brand"
+  endpoint="store"
   enhance={enhance}
 >
-  <TextField
-    id="brand"
-    title="Brand Name"
-    description='Enter the official name of the filament manufacturer (e.g., "Prusa", "Hatchbox")'
-    placeholder="e.g. Prusa"
-    bind:formVar={$form.brand}
-    errorVar={$errors.brand}
-    required={true}
-  />
+  <div class="grid grid-cols-2 gap-3">
+    <TextField
+      id="name"
+      title="Store Name"
+      description='Enter the name of the storefront'
+      placeholder="e.g. Bambu Lab Store"
+      bind:formVar={$form.name}
+      errorVar={$errors.name}
+      required={true}
+    />
+    <TextField
+      id="id"
+      title="Store ID"
+      description='Enter an internal ID for usage within the database'
+      placeholder="e.g. BBLStore"
+      bind:formVar={$form.id}
+      errorVar={$errors.id}
+      required={true}
+    />
+  </div>
 
   <TextField
     id="website"
     title="Website"
-    description='Official website URL of the brand'
+    description='Official website URL of the storefront'
     placeholder="https://www.example.com"
-    bind:formVar={$form.website}
-    errorVar={$errors.website}
+    bind:formVar={$form.storefront_url}
+    errorVar={$errors.storefront_url}
     required={true}
   />
 
-  <TextField
-    id="origin"
-    title="Origin"
-    description='Country or region where the brand is based'
-    placeholder="e.g. US, DK"
-    bind:formVar={$form.origin}
-    errorVar={$errors.origin}
-    required={true} 
+  <BigCheck
+    bind:formVar={$form.affiliate}
+    errorVar={$errors.affiliate}
+    title="Affiliate"
+    description="Select if this is an affiliate storefront"
+    required={true}
   />
 
   {#if formType === 'create'}
@@ -95,6 +106,20 @@
       required={true}
     />
   {/if}
+
+  <div class="grid grid-cols-2 gap-3">
+    <ShippingList
+      title="Ships from"
+      idPrefix="ships_from"
+      bind:regions={$form.ships_from}
+    />
+
+    <ShippingList
+      title="Ships to" 
+      idPrefix="ships_to"
+      bind:regions={$form.ships_to}
+    />
+  </div>
 
   <SubmitButton>
     {formType === 'edit' ? 'Save' : 'Create'}

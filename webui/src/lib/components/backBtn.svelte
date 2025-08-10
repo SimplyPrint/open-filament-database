@@ -17,15 +17,6 @@
     onclick={goBack}
     aria-label="Go back"
   >
-    <svg
-      class="h-8 w-8 text-gray-400"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <Fa icon={faArrowLeft} />
-    </svg>
+    <Fa icon={faArrowLeft} />
   </button>
 </menu>

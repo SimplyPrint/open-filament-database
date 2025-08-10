@@ -2,8 +2,9 @@ import { json } from '@sveltejs/kit';
 import fs from 'node:fs';
 import path from 'node:path';
 import { refreshDatabase } from '$lib/dataCacher';
+import { env } from '$env/dynamic/public';
 
-const DATA_DIR = path.resolve('../data');
+const DATA_DIR = path.resolve(env.PUBLIC_DATA_PATH);
 
 function deleteFolderRecursive(folderPath) {
   if (fs.existsSync(folderPath)) {

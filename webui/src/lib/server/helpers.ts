@@ -1,14 +1,14 @@
 import type { brandSchema } from '$lib/validation/filament-brand-schema';
 import { type z } from 'zod';
 
-import { error, fail } from '@sveltejs/kit';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { filamentMaterialSchema } from '$lib/validation/filament-material-schema';
 import type { filamentSchema } from '$lib/validation/filament-schema';
-import { stripOfIllegalChars, isEmptyObject, isValidJSON } from '$lib/globalHelpers';
+import { stripOfIllegalChars, isEmptyObject } from '$lib/globalHelpers';
 import { env } from '$env/dynamic/public';
+import type { storeSchema } from '$lib/validation/store-schema';
 
 export const removeUndefined = (obj: any): any => {
   if (Array.isArray(obj)) {
@@ -19,7 +19,7 @@ export const removeUndefined = (obj: any): any => {
         .filter(([_, v]) => v !== undefined)
         .filter(([_, v]) => v !== "null")
         .filter(([_, v]) => v !== null)
-        .filter(([_, v]) => v.length !== 0)
+        .filter(([_, v]) => v?.length !== 0)
         .filter(([_, v]) => v)
         .map(([k, v]) => [k, removeUndefined(v)]),
     );
@@ -30,6 +30,7 @@ export const removeUndefined = (obj: any): any => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, '../../../../data');
+const STORE_DIR = path.join(__dirname, '../../../../stores');
 
 export const createBrand = async (brandData: z.infer<typeof brandSchema>) => {
   let folderName = stripOfIllegalChars(brandData.brand);
@@ -125,6 +126,78 @@ export async function updateBrand(brandData: z.infer<typeof brandSchema>) {
   fs.writeFileSync(brandJsonPath, JSON.stringify(brandJson, null, 2), 'utf-8');
 
   console.log(`Brand updated: ${brandData.oldBrandName || brandData.brand} -> ${brandData.brand}`);
+  return newDir;
+}
+
+export const createStore = async (storeData: z.infer<typeof storeSchema>) => {
+  let folderName = stripOfIllegalChars(storeData.name);
+
+  const storeDir = path.join(STORE_DIR, folderName);
+  if (!fs.existsSync(storeDir)) {
+    fs.mkdirSync(storeDir, { recursive: true });
+  }
+
+  let logoPath = '';
+  let logoUrl = '';
+  if (
+    storeData.logo &&
+    typeof storeData.logo === 'object' &&
+    typeof storeData.logo.arrayBuffer === 'function'
+  ) {
+    const arrayBuffer = await storeData.logo.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    logoPath = path.join(storeDir, storeData.logo.name);
+    fs.writeFileSync(logoPath, buffer);
+    logoUrl = `/stores/${folderName}/${storeData.logo.name}`;
+  }
+
+  const storeJson = {
+    id: storeData.id,
+    name: storeData.name,
+    storefront_url: storeData.storefront_url,
+    affiliate: storeData.affiliate,
+    logo: logoUrl,
+    ships_from: storeData.ships_from,
+    ships_to: storeData.ships_to,
+  };
+
+  const brandJsonPath = path.join(storeDir, 'store.json');
+  fs.writeFileSync(brandJsonPath, JSON.stringify(storeJson, null, 2), 'utf-8');
+
+  return storeDir;
+};
+
+export async function updateStore(storeData: z.infer<typeof storeSchema>) {
+  const oldDir = path.join(STORE_DIR, stripOfIllegalChars(storeData.oldStoreName || storeData.name));
+  const newDir = path.join(STORE_DIR, stripOfIllegalChars(storeData.name));
+
+  if (
+    storeData.oldStoreName &&
+    storeData.oldStoreName !== storeData.name &&
+    fs.existsSync(oldDir)
+  ) {
+    if (fs.existsSync(newDir)) {
+      console.warn(`New store folder "${storeData.name}" already exists.`);
+    }
+    fs.renameSync(oldDir, newDir);
+  } else if (!fs.existsSync(newDir)) {
+    fs.mkdirSync(newDir, { recursive: true });
+  }
+
+  const storeJson = {
+    id: storeData.id,
+    name: storeData.name,
+    storefront_url: storeData.storefront_url,
+    affiliate: storeData.affiliate,
+    logo: storeData.logo,
+    ships_from: storeData.ships_from,
+    ships_to: storeData.ships_to,
+  };
+
+  const brandJsonPath = path.join(newDir, 'store.json');
+  fs.writeFileSync(brandJsonPath, JSON.stringify(storeJson, null, 2), 'utf-8');
+
+  console.log(`Store updated: ${storeData.oldStoreName} -> ${storeData.name}`);
   return newDir;
 }
 
@@ -353,8 +426,6 @@ export async function createColorFiles(formData: any) {
     formData.filamentName,
     formData.color_name,
   );
-
-  console.log(colorFolder);
 
   if (!fs.existsSync(colorFolder)) fs.mkdirSync(colorFolder, { recursive: true });
 
@@ -736,8 +807,31 @@ export async function updateColorSize(
 
   try {
     const sizesPath = path.join(colorDir, 'sizes.json');
-    // Yes we're just dumping raw JSON to a file.
-    fs.writeFileSync(sizesPath, JSON.stringify(sizeData, null, 2), 'utf-8');
+    
+    let tempSizes = [];
+
+    if (!Array.isArray(sizeData)) {
+      // Somewhere we broke it if the instance is single, I blame Zod
+      sizeData = [
+        sizeData
+      ];
+    }
+
+    console.log(sizeData);
+
+    Array.from(sizeData).forEach((value, index) => {
+      let tempData = value;
+
+      // Reinforce required data
+      tempData.diameter = tempData?.diameter ? tempData.diameter : 0;
+      tempData.filament_weight = tempData?.filament_weight ? tempData.filament_weight : 0;
+      
+      tempSizes[index] = tempData;
+    });
+
+    console.log(tempSizes);
+
+    fs.writeFileSync(sizesPath, JSON.stringify(tempSizes, null, 2), 'utf-8');
   } catch (error) {
     console.error('Error updating color size:', error);
     throw error;

@@ -3,8 +3,8 @@ import { env } from '$env/dynamic/public';
 import { folderPassthrough } from '$lib/server/folderPassthrough';
 
 // Path to your data directory
-const DATA_DIR = env.PUBLIC_DATA_PATH;
+const STORES_DIR = env.PUBLIC_STORES_PATH;
 
 export const GET: RequestHandler = async ({ params }) => {
-  return folderPassthrough(params, DATA_DIR);
+  return folderPassthrough(params, STORES_DIR);
 };

@@ -6,7 +6,7 @@
   import { traitsSchema } from '$lib/validation/filament-variant-schema';
   import { capitalizeFirstLetter } from '$lib/globalHelpers';
   import { writable } from 'svelte/store';
-  import DiscontinuedCheck from '../components/discontinuedCheck.svelte';
+  import BigCheck from '../components/bigCheck.svelte';
   import Form from '../components/form.svelte';
   import DeleteButton from '../components/deleteButton.svelte';
   import SubmitButton from '../components/submitButton.svelte';
@@ -140,7 +140,7 @@
         required={true}
       />
 
-      <DiscontinuedCheck
+      <BigCheck
         bind:formVar={$form.discontinued}
         errorVar={$errors.discontinued}
         description="Select if this colour/variant is discontinued"

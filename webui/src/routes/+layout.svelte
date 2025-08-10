@@ -1,9 +1,9 @@
 <script lang="ts">
   import BackBtn from '$lib/components/backBtn.svelte';
   import Breadcrumb from '$lib/components/breadcrumb.svelte';
+  import { getFlash, updateFlash } from 'sveltekit-flash-message';
   import '../app.css';
   import type { LayoutProps } from './$types';
-  import { getFlash, updateFlash } from 'sveltekit-flash-message';
   import { page } from '$app/state';
   import { env } from '$env/dynamic/public';
   const isLocal = env.PUBLIC_IS_LOCAL === 'true';
@@ -100,6 +100,8 @@
         });
 
         await updateFlash(page);
+
+        location.reload();
       }}>
         Refresh DB Data
       </button>
