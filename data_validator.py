@@ -235,7 +235,7 @@ def validate_store_ids():
                 if "store_id" in purchase_link:
                     if purchase_link["store_id"] not in valid_store_ids:
                         print(
-                            f"'{purchase_link["store_id"]}' is not a valid store ID. Found in {_sizes_file} at location $[{size_idx}].purchase_links[{purchase_link_idx}]")
+                            f"'{purchase_link['store_id']}' is not a valid store ID. Found in {_sizes_file} at location $[{size_idx}].purchase_links[{purchase_link_idx}]")
                         failed_validation = True
 
 
