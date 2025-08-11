@@ -1,51 +1,39 @@
 name: Validate data
 on:
-    pull_request:
-        branches:
-            - main
-        paths:
-            - 'data/**'
-            - 'schemas/**'
-            - 'data_validator.py'
-            - '.github/workflows/validate_data.yaml'
-    push:
-        branches:
-            - main
-        paths:
-            - 'data/**'
-            - 'schemas/**'
-            - 'data_validator.py'
-            - '.github/workflows/validate_data.yaml'
-    workflow_dispatch:
-
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'stores/**'
+      - 'schemas/**'
+      - 'data_validator.py'
+      - 'db_serializer.py'
+      - 'requirements.txt'
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/**'
+      - 'stores/**'
+      - 'schemas/**'
+      - 'data_validator.py'
+      - 'db_serializer.py'
+      - 'requirements.txt'
+  workflow_dispatch:
 
 jobs:
-    validate_json_files:
-        name: Validate JSON files
-        runs-on: ubuntu-24.04
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
-
-            -   name: Validate JSON files
-                run: python data_validator.py --json-files
-
-    validate_folder_names:
-        name: Validate folder names
-        runs-on: ubuntu-24.04
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
-
-            -   name: Validate folder structure
-                run: python data_validator.py --folder-names
-
-    validate_store_ids:
-        name: Validate store IDs
-        runs-on: ubuntu-24.04
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
-
-            -   name: Validate store IDs
-                run: python data_validator.py --store-ids
+  validate_data:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        name: [ json-files, folder-names, store-ids ]
+    name: Validate data - ${{ matrix.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Validate data
+        run: python data_validator.py --${{ matrix.name }}
