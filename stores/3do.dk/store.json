@@ -1,0 +1,9 @@
+{
+  "id": "3do.dk",
+  "name": "3DO.dk",
+  "storefront_url": "https://3do.dk/",
+  "affiliate": false,
+  "logo": "3do.webp",
+  "ships_from": "DK",
+  "ships_to": []
+}

@@ -1,0 +1,17 @@
+{
+    "id": "amazon",
+    "name": "Amazon",
+    "storefront_url": "https://www.amazon.com/",
+    "affiliate": false,
+    "logo": "amazon.png",
+    "ships_from": [
+        "US",
+        "CA",
+        "MX"
+    ],
+    "ships_to": [
+        "US",
+        "CA",
+        "MX"
+    ]
+}

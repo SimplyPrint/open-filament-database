@@ -84,6 +84,18 @@ def validate_json_files():
         brand_file = _brand_dir.joinpath("brand.json")
         if brand_file.exists():
             failed_validation |= not validate_json_file(brand_file, BRAND_SCHEMA)
+            brandData = get_json_from_file(brand_file)
+            logoName = brandData["logo"]
+
+            if "/" in logoName:
+                print("/ exists in logo path, only use file name.", brandData)
+                failed_validation = True
+            
+            logoFile = _brand_dir.joinpath(logoName)
+
+            if not logoFile.exists():
+                print("Missing", logoFile)
+                failed_validation = True
         else:
             print("Missing", brand_file)
             failed_validation = True
@@ -214,6 +226,20 @@ def validate_folder_names():
                                   f"does not match the value of 'color_name' ({variant_name}) of", variant_file.name)
                             failed_validation = True
 
+    for _store_dir in Path("./stores").iterdir():
+        if not _store_dir.is_dir():
+            continue
+
+        # Validate brand folder name
+        store_file = _store_dir.joinpath("store.json")
+
+        if store_file.exists():
+            store_data = get_json_from_file(store_file)
+            store_id = cleanse_folder_name(store_data.get("id", ""))
+            if _store_dir.name != store_id:
+                print("The name of the folder", _store_dir,
+                    f"does not match the value of 'id' ({store_id}) of", brand_file.name)
+                failed_validation = True
 
 def validate_store_ids():
     global failed_validation
