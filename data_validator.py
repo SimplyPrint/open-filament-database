@@ -7,6 +7,8 @@ from typing import Union
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
+from PIL import Image
+
 PathLike = Union[str, os.PathLike[str]]
 
 # Global variable that denotes the last json file that was read
@@ -84,6 +86,18 @@ def validate_json_files():
         brand_file = _brand_dir.joinpath("brand.json")
         if brand_file.exists():
             failed_validation |= not validate_json_file(brand_file, BRAND_SCHEMA)
+            brandData = get_json_from_file(brand_file)
+            logoName = brandData["logo"]
+
+            if "/" in logoName:
+                print("/ exists in logo path, only use file name.", brandData)
+                failed_validation = True
+            
+            logoFile = _brand_dir.joinpath(logoName)
+
+            if not logoFile.exists():
+                print("Missing", logoFile)
+                failed_validation = True
         else:
             print("Missing", brand_file)
             failed_validation = True
@@ -144,6 +158,65 @@ def validate_json_files():
             print("Missing", store_file)
             failed_validation = True
 
+# -------------------------
+# Validate logo files against rules
+# Rules right now:
+# Width and Height are the same
+# dimensions are min 100x100 and max 400x400 if not svg
+# -------------------------
+
+minSize = 100
+maxSize = 400
+
+def validate_icon(logo_file):
+    img = Image.open(logo_file)
+                    
+    width, height = img.size
+
+    if width != height:
+        print(f"Width and height of {logo_file} are unequal")
+        failed_validation = True
+    
+    if width < minSize or height < minSize:
+        print(f"Width/height of {logo_file} are smaller than the allowed size {minSize}")
+        failed_validation = True
+    
+    if width > maxSize or height > maxSize:
+        print(f"Width/height of {logo_file} are bigger than the allowed size {maxSize}")
+        failed_validation = True
+
+def validate_logo_files():
+    global failed_validation
+
+    # Validate brand folder logos
+    for _brand_dir in Path("./data").iterdir():
+        if not _brand_dir.is_dir():
+            continue
+
+        brand_file = _brand_dir.joinpath("brand.json")
+        if brand_file.exists():
+            brand_data = get_json_from_file(brand_file)
+            icon_name = brand_data.get("logo", "")
+            
+            if icon_name != "":
+                logo_file = _brand_dir.joinpath(icon_name)
+                if logo_file.exists() and not ".svg" in icon_name:
+                    validate_icon(logo_file)
+
+    # Validate store folder logos
+    for _store_dir in Path("./stores").iterdir():
+        if not _store_dir.is_dir():
+            continue
+
+        store_file = _store_dir.joinpath("store.json")
+        if store_file.exists():
+            store_data = get_json_from_file(store_file)
+            icon_name = store_data.get("logo", "")
+            
+            if icon_name != "":
+                logo_file = _store_dir.joinpath(icon_name)
+                if logo_file.exists() and not ".svg" in icon_name:
+                    validate_icon(logo_file)
 
 # -------------------------
 # Validate folder names
@@ -214,6 +287,20 @@ def validate_folder_names():
                                   f"does not match the value of 'color_name' ({variant_name}) of", variant_file.name)
                             failed_validation = True
 
+    for _store_dir in Path("./stores").iterdir():
+        if not _store_dir.is_dir():
+            continue
+
+        # Validate brand folder name
+        store_file = _store_dir.joinpath("store.json")
+
+        if store_file.exists():
+            store_data = get_json_from_file(store_file)
+            store_id = cleanse_folder_name(store_data.get("id", ""))
+            if _store_dir.name != store_id:
+                print("The name of the folder", _store_dir,
+                    f"does not match the value of 'id' ({store_id}) of", brand_file.name)
+                failed_validation = True
 
 def validate_store_ids():
     global failed_validation
@@ -244,12 +331,16 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument("--json-files", action="store_true")
+    parser.add_argument("--logo-files", action="store_true")
     parser.add_argument("--folder-names", action="store_true")
     parser.add_argument("--store-ids", action="store_true")
 
     args = parser.parse_args()
     if args.json_files:
         validate_json_files()
+
+    if args.logo_files:
+        validate_logo_files()
 
     if args.folder_names:
         validate_folder_names()
