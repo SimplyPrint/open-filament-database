@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 const illegal_characters = [
   "#","%","&","{","}","\\","<",
   ">","*","?","/","$","!","'",
-  '"',":","@","+","`","|","="
+  '"',":","@","`","|","="
 ];
 // This should at all times be the same as /data_validator.py:22
 

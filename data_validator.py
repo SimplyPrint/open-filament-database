@@ -18,9 +18,10 @@ last_json_file_loaded = ""
 illegal_characters = [
   "#","%","&","{","}","\\","<",
   ">","*","?","/","$","!","'",
-  '"',":","@","+","`","|","="
+  '"',":","@","`","|","="
 ] # TODO: Add emojis and alt codes
-# This should at all times be the same as /webui/src/lib/server/helpers.ts:26
+# This should at all times be the same as /scripts/import_spoolman.py and /webui/src/lib/globalHelpers.ts:3
+
 
 def get_json_from_file(json_path: PathLike):
     """
