@@ -2,6 +2,13 @@ import { z } from 'zod';
 
 export const purchaseLinkSchema = z.object({
   store_id: z.string(),
+  affiliate_link: z
+    .string()
+    .url('Please enter a valid URL')
+    .refine((url) => {
+      return url.startsWith('http://') || url.startsWith('https://');
+    }, 'URL must use HTTP or HTTPS protocol')
+    .default('https://'),
   url: z
     .string()
     .url('Please enter a valid URL')
