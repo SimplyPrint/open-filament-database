@@ -1,0 +1,14 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "ean": "44903968473277",
+    "purchase_links": [
+      {
+        "store_id": "AnyCubic",
+        "url": "https://ca.anycubic.com/products/abs-filament?variant=44903968473277",
+        "affiliate": false
+      }
+    ]
+  }
+]

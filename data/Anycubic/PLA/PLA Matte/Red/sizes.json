@@ -1,0 +1,15 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "ean": "45344393953469",
+    "article_number": "hygre-102",
+    "purchase_links": [
+      {
+        "store_id": "AnyCubic",
+        "url": "https://ca.anycubic.com/products/matte-pla-filament?variant=45344393953469",
+        "affiliate": false
+      }
+    ]
+  }
+]

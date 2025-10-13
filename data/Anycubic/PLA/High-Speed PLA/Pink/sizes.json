@@ -1,0 +1,17 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "empty_spool_weight": 125,
+    "spool_core_diameter": 52,
+    "ean": "44831258837181",
+    "purchase_links": [
+      {
+        "store_id": "AnyCubic",
+        "url": "https://ca.anycubic.com/products/high-speed-pla-filament?variant=44831258837181",
+        "spool_refill": true,
+        "affiliate": false
+      }
+    ]
+  }
+]

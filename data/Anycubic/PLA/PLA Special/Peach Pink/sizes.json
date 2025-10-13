@@ -1,0 +1,14 @@
+[
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "ean": "44831261196477",
+    "purchase_links": [
+      {
+        "store_id": "AnyCubic",
+        "url": "https://ca.anycubic.com/products/pla-special?variant=44831261196477",
+        "affiliate": false
+      }
+    ]
+  }
+]
