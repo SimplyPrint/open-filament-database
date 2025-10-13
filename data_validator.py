@@ -353,9 +353,6 @@ if __name__ == '__main__':
     parser.add_argument("--store-ids", action="store_true")
 
     args = parser.parse_args()
-    if args.json_files:
-        print("Validating json files, please wait...")
-        validate_json_files()
 
     if args.logo_files:
         print("Validating logo files, please wait...")
@@ -368,6 +365,22 @@ if __name__ == '__main__':
     if args.store_ids:
         print("Validating store ids, please wait...")
         validate_store_ids()
+
+    if args.json_files:
+        print("Validating json files, please wait...")
+        validate_json_files()
+
+    # if no args are parsed we bring ragnarok
+    if not any(vars(args).values()):
+        print("Validating logo files, please wait...")
+        validate_logo_files()
+        print("Validating folder names, please wait...")
+        validate_folder_names()
+        print("Validating store ids, please wait...")
+        validate_store_ids()
+        # This operation is by far the heaviest so we place it last
+        print("Validating json files, please wait...")
+        validate_json_files()
 
     if failed_validation:
         print("Validation failed!")
