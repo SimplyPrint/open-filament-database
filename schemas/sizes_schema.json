@@ -64,6 +64,10 @@
                             "type": "string",
                             "$ref": "#/definitions/string_limit"
                         },
+                        "affiliate_link": {
+                            "type": "string",
+                            "$ref": "#/definitions/string_limit"
+                        },
                         "affiliate": {
                             "type": "boolean"
                         },

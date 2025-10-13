@@ -3,7 +3,7 @@
   "name": "Anycubic",
   "storefront_url": "https://store.anycubic.com/",
   "affiliate": false,
-  "logo": "anycubic-logo.png",
+  "logo": "anycubic.png",
   "ships_from": [
     "CN, US, CA, EU, UK, AU"
   ],
