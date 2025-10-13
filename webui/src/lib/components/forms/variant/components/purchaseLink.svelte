@@ -36,7 +36,6 @@
   </div>
 
   <div class="space-y-4">
-    <!-- TODO: Replace with dropdown ones store infra exists -->
     <PurchaseDropdown
       id="sizes_{sizeIndex}_store_id_{purchaseIndex}"
       title="Store ID"
@@ -46,18 +45,18 @@
       required={true}
     />
 
-    <!--<PurchaseTextField
-      id="sizes_{sizeIndex}_store_id_{purchaseIndex}"
-      title="Store ID"
-      placeholder="amazon-us"
-      bind:formVar={$localLink.store_id}
-      errorVar={$errors?.sizes?.[sizeIndex]?.purchase_links?.[purchaseIndex]?.store_id?.[0]}
+    <PurchaseTextField
+      id="sizes_{sizeIndex}_affiliate_link_{purchaseIndex}"
+      title="Affiliate Purchase URL"
+      placeholder="https://www.store.com/product/12345?affiliate_id=321"
+      bind:formVar={$localLink.affiliate_link}
+      errorVar={$errors?.sizes?.[sizeIndex]?.purchase_links?.[purchaseIndex]?.url?.[0]}
       required={true}
-    />-->
+    />
 
     <PurchaseTextField
       id="sizes_{sizeIndex}_url_{purchaseIndex}"
-      title="Purchase URL"
+      title="Regular Purchase URL"
       placeholder="https://www.store.com/product/12345"
       bind:formVar={$localLink.url}
       errorVar={$errors?.sizes?.[sizeIndex]?.purchase_links?.[purchaseIndex]?.url?.[0]}
