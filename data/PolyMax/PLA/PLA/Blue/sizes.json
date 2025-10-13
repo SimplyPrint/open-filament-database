@@ -6,7 +6,8 @@
     "purchase_links": [
       {
         "store_id": "polymaker",
-        "url": "https://us.polymaker.com/products/polymax-pla?aff=1306&utm_source=affiliately&utm_campaign=aff",
+        "affiliate_link": "https://us.polymaker.com/products/polymax-pla?sca_ref=9781188.Ca9wv9CZ1J",
+        "url": "https://us.polymaker.com/products/polymax-pla",
         "affiliate": true
       }
     ]
@@ -21,7 +22,8 @@
     "purchase_links": [
       {
         "store_id": "polymaker",
-        "url": "https://us.polymaker.com/products/polymax-pla?aff=1306&utm_source=affiliately&utm_campaign=aff",
+        "affiliate_link": "https://us.polymaker.com/products/polymax-pla?sca_ref=9781188.Ca9wv9CZ1J",
+        "url": "https://us.polymaker.com/products/polymax-pla",
         "affiliate": true
       }
     ]
