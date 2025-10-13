@@ -9,6 +9,7 @@
     "purchase_links": [
       {
         "store_id": "AnyCubic",
+        "affiliate_link": "https://awin1.com/cread.php?awinmid=69360&awinaffid=2609884&ued=https://store.anycubic.com/products/petg-filament?variant=44465884692642",
         "url": "https://store.anycubic.com/products/petg-filament?variant=44465884692642",
         "affiliate": false
       }
