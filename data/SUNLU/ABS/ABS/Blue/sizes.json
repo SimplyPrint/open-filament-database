@@ -13,6 +13,7 @@
     "purchase_links": [
       {
         "store_id": "sunlu",
+        "affiliate_link": "https://www.sunlu.com/products/over-6kg-bundle-sale-abs-filament-1kg-roll?sca_ref=9781188.Ca9wv9CZ1J",
         "url": "https://www.sunlu.com/products/over-6kg-bundle-sale-abs-filament-1kg-roll",
         "affiliate": true
       }
