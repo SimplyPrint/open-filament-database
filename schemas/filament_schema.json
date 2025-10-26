@@ -1,124 +1,315 @@
 {
-    "type": "object",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
+    "$defs": {
+        "GenericSlicerSettings": {
+            "additionalProperties": false,
+            "description": "Generic slicer settings that map to specific slicer configurations.",
+            "properties": {
+                "first_layer_bed_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "First Layer Bed Temp"
+                },
+                "first_layer_nozzle_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "First Layer Nozzle Temp"
+                },
+                "bed_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "Bed Temp"
+                },
+                "nozzle_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "Nozzle Temp"
+                }
+            },
+            "title": "GenericSlicerSettings",
+            "type": "object"
         },
-        "specific_slicer_settings": {
-            "type": "object",
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
+        },
+        "SlicerIDs": {
+            "description": "Slicer-specific IDs for the filament.",
+            "properties": {
+                "prusaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "bambustudio": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "orcaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "cura": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                }
+            },
+            "title": "SlicerIDs",
+            "type": "object"
+        },
+        "SlicerSettings": {
+            "additionalProperties": false,
+            "description": "Settings for various slicer applications.",
+            "properties": {
+                "prusaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "bambustudio": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "orcaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "cura": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "generic": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenericSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Generic options that will automatically be mapped to the correct config definition for each slicer. Slicer specific settings are applied first, then these are applied on top."
+                }
+            },
+            "title": "SlicerSettings",
+            "type": "object"
+        },
+        "SpecificSlicerSettings": {
+            "description": "Settings for a specific slicer application.",
             "properties": {
                 "profile_name": {
-                    "type": "string",
-                    "description": "The name of the profile for this filament. If there is a profile specifically for this filament, that is what should be specified, even if it is printer specific. For slic3r variants, data after the '@' does not need to be included and will be removed when loading into python.",
-                    "$ref": "#/definitions/string_limit"
+                    "$ref": "#/$defs/LimitedString",
+                    "description": "The name of the profile for this filament. If there is a profile specifically for this filament, that is what should be specified, even if it is printer specific. For slic3r variants, data after the '@' does not need to be included and will be removed when loading into python."
                 },
                 "overrides": {
-                    "type": "object",
-                    "description": "Key-value pairs for settings that should be overridden for this filament"
+                    "anyOf": [
+                        {
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                ]
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Key-value pairs for settings that should be overridden for this filament",
+                    "title": "Overrides"
                 }
             },
             "required": [
                 "profile_name"
-            ]
-        },
-        "slicer_settings": {
-            "type": "object",
-            "properties": {
-                "prusaslicer": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "bambustudio": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "orcaslicer": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "cura": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "generic": {
-                    "type": "object",
-                    "description": "Generic options that will automatically be mapped to the correct config definition for each slicer. Slicer specific settings are applied first, then these are applied on top.",
-                    "properties": {
-                        "first_layer_bed_temp": {
-                            "type": "integer"
-                        },
-                        "first_layer_nozzle_temp": {
-                            "type": "integer"
-                        },
-                        "bed_temp": {
-                            "type": "integer"
-                        },
-                        "nozzle_temp": {
-                            "type": "integer"
-                        }
-                    }
-                }
-            },
-            "additionalProperties": false
-        },
-        "slicer_id": {
-            "type": "string",
-            "$ref": "#/definitions/string_limit"
-        }
-    },
-    "properties": {
-        "name": {
-            "type": "string",
-            "description": "The manufacture's name for this filament",
-            "$ref": "#/definitions/string_limit"
-        },
-        "diameter_tolerance": {
-            "type": "number",
-            "description": "The diameter tolerance of the filament (in mm)"
-        },
-        "density": {
-            "type": "number",
-            "description": "The density of the filament (in g/cm³)",
-            "default": 1.24
-        },
-        "max_dry_temperature": {
-            "type": "integer"
-        },
-        "data_sheet_url": {
-            "type": "string",
-            "description": "A link to the data sheet for this filament",
-            "$ref": "#/definitions/string_limit"
-        },
-        "safety_sheet_url": {
-            "type": "string",
-            "description": "A link to the safety sheet for this filament",
-            "$ref": "#/definitions/string_limit"
-        },
-        "discontinued": {
-            "type": "boolean"
-        },
-        "slicer_ids": {
-            "type": "object",
-            "properties": {
-                "prusaslicer": {
-                    "$ref": "#/definitions/slicer_id"
-                },
-                "bambustudio": {
-                    "$ref": "#/definitions/slicer_id"
-                },
-                "orcaslicer": {
-                    "$ref": "#/definitions/slicer_id"
-                },
-                "cura": {
-                    "$ref": "#/definitions/slicer_id"
-                }
-            }
-        },
-        "slicer_settings": {
-            "$ref": "#/definitions/slicer_settings",
-            "description": "The slicer settings that should be used for this filament. This will override what is set in \"default_slicer_settings\""
+            ],
+            "title": "SpecificSlicerSettings",
+            "type": "object"
         }
     },
     "additionalProperties": false,
+    "description": "Filament product line information.",
+    "properties": {
+        "name": {
+            "$ref": "#/$defs/LimitedString",
+            "description": "The manufacture's name for this filament"
+        },
+        "diameter_tolerance": {
+            "description": "The diameter tolerance of the filament (in mm)",
+            "title": "Diameter Tolerance",
+            "type": "number"
+        },
+        "density": {
+            "default": 1.24,
+            "description": "The density of the filament (in g/cm\u00b3)",
+            "title": "Density",
+            "type": "number"
+        },
+        "max_dry_temperature": {
+            "anyOf": [
+                {
+                    "type": "integer"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "title": "Max Dry Temperature"
+        },
+        "data_sheet_url": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/LimitedString"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        },
+        "safety_sheet_url": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/LimitedString"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        },
+        "discontinued": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "title": "Discontinued"
+        },
+        "slicer_ids": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/SlicerIDs"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        },
+        "slicer_settings": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/SlicerSettings"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "The slicer settings that should be used for this filament. This will override what is set in \"default_slicer_settings\""
+        }
+    },
     "required": [
         "name",
-        "density",
         "diameter_tolerance"
-    ]
+    ],
+    "title": "Filament",
+    "type": "object"
 }

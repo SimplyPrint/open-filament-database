@@ -1,98 +1,247 @@
 {
-    "type": "object",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
-        }
-    },
-    "properties": {
-        "color_name": {
-            "type": "string",
-            "description": "The manufacturer's name for this filament color",
-            "$ref": "#/definitions/string_limit"
-        },
-        "color_hex": {
-            "type": [
-                "string",
-                "array"
-            ],
-            "items": {
-                "type": "string",
-                "pattern": "^#?[a-fA-F0-9]{6}$"
-            },
+    "$defs": {
+        "Color": {
+            "description": "String or list of strings representing hex color codes.",
             "pattern": "^#?[a-fA-F0-9]{6}$",
-            "description": "The official hex color code for this filament"
+            "title": "Color",
+            "type": "string"
         },
-        "hex_variants": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "pattern": "^#?[a-fA-F0-9]{6}$"
-            },
-            "description": "Alternative hex color codes that this filament is known to report or be identified as (e.g., via NFC)"
-        },
-        "discontinued": {
-            "type": "boolean"
-        },
-        "color_standards": {
-            "type": "object",
+        "ColorStandards": {
+            "description": "Standard color system identifiers.",
             "properties": {
                 "ral": {
-                    "type": "string",
-                    "$ref": "#/definitions/string_limit"
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
                 },
-                "ncs":{
-                    "type": "string",
-                    "$ref": "#/definitions/string_limit"
+                "ncs": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
                 },
                 "pantone": {
-                    "type": "string",
-                    "$ref": "#/definitions/string_limit"
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
                 },
-                "bs":{
-                    "type": "string",
-                    "$ref": "#/definitions/string_limit"
+                "bs": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
                 },
                 "munsell": {
-                    "type": "string",
-                    "$ref": "#/definitions/string_limit"
-                }
-            }
-        },
-        "traits": {
-            "type": "object",
-            "properties": {
-                "translucent": {
-                    "type": "boolean",
-                    "description": "Indicates that the filament is translucent"
-                },
-                "glow": {
-                    "type": "boolean",
-                    "description": "Indicates that the filament glows in the dark"
-                },
-                "matte": {
-                    "type": "boolean",
-                    "description": "Indicates that the filament has a matte finish"
-                },
-                "recycled": {
-                    "type": "boolean",
-                    "description": "Indicates that the filament was made of recycled materials"
-                },
-                "recyclable": {
-                    "type": "boolean",
-                    "description": "Indicates that the filament can be recycled"
-                },
-                "biodegradable": {
-                    "type": "boolean",
-                    "description": "Indicates if the filament will biodegrade"
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
                 }
             },
-            "additionalProperties": false
+            "title": "ColorStandards",
+            "type": "object"
+        },
+        "Colors": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Color"
+                },
+                {
+                    "items": {
+                        "$ref": "#/$defs/Color"
+                    },
+                    "type": "array"
+                }
+            ],
+            "description": "Either a single hex color code string or a list of such strings.",
+            "title": "Colors"
+        },
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
+        },
+        "Traits": {
+            "additionalProperties": false,
+            "description": "Physical and environmental traits of the filament.",
+            "properties": {
+                "translucent": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates that the filament is translucent",
+                    "title": "Translucent"
+                },
+                "glow": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates that the filament glows in the dark",
+                    "title": "Glow"
+                },
+                "matte": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates that the filament has a matte finish",
+                    "title": "Matte"
+                },
+                "recycled": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates that the filament was made of recycled materials",
+                    "title": "Recycled"
+                },
+                "recyclable": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates that the filament can be recycled",
+                    "title": "Recyclable"
+                },
+                "biodegradable": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicates if the filament will biodegrade",
+                    "title": "Biodegradable"
+                }
+            },
+            "title": "Traits",
+            "type": "object"
         }
     },
     "additionalProperties": false,
+    "description": "Color variant of a filament.",
+    "properties": {
+        "color_name": {
+            "$ref": "#/$defs/LimitedString",
+            "description": "The manufacturer's name for this filament color"
+        },
+        "color_hex": {
+            "$ref": "#/$defs/Colors",
+            "description": "The official hex color code for this filament"
+        },
+        "hex_variants": {
+            "anyOf": [
+                {
+                    "items": {
+                        "$ref": "#/$defs/Color"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "Alternative hex color codes that this filament is known to report or be identified as (e.g., via NFC)",
+            "title": "Hex Variants"
+        },
+        "discontinued": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "title": "Discontinued"
+        },
+        "color_standards": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/ColorStandards"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        },
+        "traits": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Traits"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        }
+    },
     "required": [
         "color_name",
         "color_hex"
-    ]
+    ],
+    "title": "Variant",
+    "type": "object"
 }

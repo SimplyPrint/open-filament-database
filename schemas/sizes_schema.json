@@ -1,115 +1,228 @@
 {
-    "type": "array",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
-        }
-    },
-    "items": {
-        "type": "object",
-        "properties": {
-            "filament_weight": {
-                "type": "number",
-                "description": "The weight of the filament alone (in grams)",
-                "default": 1000
-            },
-            "diameter": {
-                "type": "number",
-                "description": "The diameter of the filament (in mm)",
-                "default": 1.75
-            },
-            "empty_spool_weight": {
-                "type": "number",
-                "description": "The weight of a spool with no filament (in grams)"
-            },
-            "spool_core_diameter": {
-                "type": "number",
-                "description": "The diameter of the core of the spool"
-            },
-            "ean": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "article_number": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "barcode_identifier": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "nfc_identifier": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "qr_identifier": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "discontinued": {
-                "type": "boolean"
-            },
-            "purchase_links": {
-                "type": "array",
-                "description": "A list of places to purchase this filament",
-                "$comment": "The key for the pattern should be the name of the store",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "store_id": {
-                            "type": "string",
-                            "$ref": "#/definitions/string_limit"
+    "$defs": {
+        "CountryCode": {
+            "anyOf": [
+                {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "pattern": "^([A-Z]{2})$",
+                    "type": "string"
+                },
+                {
+                    "const": "Unknown",
+                    "type": "string"
+                }
+            ],
+            "description": "String type for ISO 3166-1 alpha-2 country codes.",
+            "title": "CountryCode"
+        },
+        "FilamentSize": {
+            "additionalProperties": false,
+            "description": "Size/weight variant of a filament color.",
+            "properties": {
+                "filament_weight": {
+                    "default": 1000,
+                    "description": "The weight of the filament alone (in grams)",
+                    "title": "Filament Weight",
+                    "type": "number"
+                },
+                "diameter": {
+                    "default": 1.75,
+                    "description": "The diameter of the filament (in mm)",
+                    "title": "Diameter",
+                    "type": "number"
+                },
+                "empty_spool_weight": {
+                    "anyOf": [
+                        {
+                            "type": "number"
                         },
-                        "url": {
-                            "type": "string",
-                            "$ref": "#/definitions/string_limit"
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "The weight of a spool with no filament (in grams)",
+                    "title": "Empty Spool Weight"
+                },
+                "spool_core_diameter": {
+                    "anyOf": [
+                        {
+                            "type": "number"
                         },
-                        "affiliate": {
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "The diameter of the core of the spool",
+                    "title": "Spool Core Diameter"
+                },
+                "ean": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "article_number": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "barcode_identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "nfc_identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "qr_identifier": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LimitedString"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "discontinued": {
+                    "anyOf": [
+                        {
                             "type": "boolean"
                         },
-                        "spool_refill": {
-                            "type": "boolean",
-                            "description": "Indicates if this is a refill for a reusable spool",
-                            "default": false
-                        },
-                        "ships_from": {
-                            "type": [
-                                "array",
-                                "string"
-                            ],
-                            "description": "A list of locations the shop ships from. Defining this here will override the definition from the shop.",
-                            "items": {
-                                "type": "string",
-                                "$ref": "#/definitions/string_limit"
-                            },
-                            "$ref": "#/definitions/string_limit"
-                        },
-                        "ships_to": {
-                            "type": [
-                                "array",
-                                "string"
-                            ],
-                            "description": "A list of locations the shop ships to. Defining this here will override the definition from the shop.",
-                            "items": {
-                                "type": "string",
-                                "$ref": "#/definitions/string_limit"
-                            },
-                            "$ref": "#/definitions/string_limit"
+                        {
+                            "type": "null"
                         }
-                    },
-                    "required": [
-                        "store_id",
-                        "affiliate",
-                        "url"
-                    ]
+                    ],
+                    "default": null,
+                    "title": "Discontinued"
+                },
+                "purchase_links": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/$defs/PurchaseLink"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "A list of places to purchase this filament",
+                    "title": "Purchase Links"
                 }
-            }
+            },
+            "title": "FilamentSize",
+            "type": "object"
         },
-        "additionalProperties": false,
-        "required": [
-            "filament_weight",
-            "diameter"
-        ]
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
+        },
+        "PurchaseLink": {
+            "description": "Purchase link for a specific size.",
+            "properties": {
+                "store_id": {
+                    "$ref": "#/$defs/LimitedString"
+                },
+                "url": {
+                    "$ref": "#/$defs/LimitedString"
+                },
+                "affiliate": {
+                    "title": "Affiliate",
+                    "type": "boolean"
+                },
+                "spool_refill": {
+                    "default": false,
+                    "description": "Indicates if this is a refill for a reusable spool",
+                    "title": "Spool Refill",
+                    "type": "boolean"
+                },
+                "ships_from": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/$defs/CountryCode"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "$ref": "#/$defs/CountryCode"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "A list of locations the shop ships from. Defining this here will override the definition from the shop.",
+                    "title": "Ships From"
+                },
+                "ships_to": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "$ref": "#/$defs/CountryCode"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "$ref": "#/$defs/CountryCode"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "A list of locations the shop ships to. Defining this here will override the definition from the shop.",
+                    "title": "Ships To"
+                }
+            },
+            "required": [
+                "store_id",
+                "url",
+                "affiliate"
+            ],
+            "title": "PurchaseLink",
+            "type": "object"
+        }
     },
-    "minItems": 1
+    "description": "Array of filament sizes - models the sizes.json schema.",
+    "items": {
+        "$ref": "#/$defs/FilamentSize"
+    },
+    "minItems": 1,
+    "title": "FilamentSizeArray",
+    "type": "array"
 }

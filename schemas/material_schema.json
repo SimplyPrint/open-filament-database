@@ -1,79 +1,207 @@
 {
-    "type": "object",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
+    "$defs": {
+        "GenericSlicerSettings": {
+            "additionalProperties": false,
+            "description": "Generic slicer settings that map to specific slicer configurations.",
+            "properties": {
+                "first_layer_bed_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "First Layer Bed Temp"
+                },
+                "first_layer_nozzle_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "First Layer Nozzle Temp"
+                },
+                "bed_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "Bed Temp"
+                },
+                "nozzle_temp": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "title": "Nozzle Temp"
+                }
+            },
+            "title": "GenericSlicerSettings",
+            "type": "object"
         },
-        "specific_slicer_settings": {
-            "type": "object",
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
+        },
+        "SlicerSettings": {
+            "additionalProperties": false,
+            "description": "Settings for various slicer applications.",
+            "properties": {
+                "prusaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "bambustudio": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "orcaslicer": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "cura": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SpecificSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null
+                },
+                "generic": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenericSlicerSettings"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Generic options that will automatically be mapped to the correct config definition for each slicer. Slicer specific settings are applied first, then these are applied on top."
+                }
+            },
+            "title": "SlicerSettings",
+            "type": "object"
+        },
+        "SpecificSlicerSettings": {
+            "description": "Settings for a specific slicer application.",
             "properties": {
                 "profile_name": {
-                    "type": "string",
-                    "description": "The name of the profile for this filament. If there is a profile specifically for this filament, that is what should be specified, even if it is printer specific. For slic3r variants, data after the '@' does not need to be included and will be removed when loading into python.",
-                    "$ref": "#/definitions/string_limit"
+                    "$ref": "#/$defs/LimitedString",
+                    "description": "The name of the profile for this filament. If there is a profile specifically for this filament, that is what should be specified, even if it is printer specific. For slic3r variants, data after the '@' does not need to be included and will be removed when loading into python."
                 },
                 "overrides": {
-                    "type": "object",
-                    "description": "Key-value pairs for settings that should be overridden for this filament"
+                    "anyOf": [
+                        {
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                ]
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Key-value pairs for settings that should be overridden for this filament",
+                    "title": "Overrides"
                 }
             },
             "required": [
                 "profile_name"
-            ]
-        },
-        "slicer_settings": {
-            "type": "object",
-            "properties": {
-                "prusaslicer": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "bambustudio": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "orcaslicer": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "cura": {
-                    "$ref": "#/definitions/specific_slicer_settings"
-                },
-                "generic": {
-                    "type": "object",
-                    "description": "Generic options that will automatically be mapped to the correct config definition for each slicer. Slicer specific settings are applied first, then these are applied on top.",
-                    "properties": {
-                        "first_layer_bed_temp": {
-                            "type": "integer"
-                        },
-                        "first_layer_nozzle_temp": {
-                            "type": "integer"
-                        },
-                        "bed_temp": {
-                            "type": "integer"
-                        },
-                        "nozzle_temp": {
-                            "type": "integer"
-                        }
-                    }
-                }
-            },
-            "additionalProperties": false
-        }
-    },
-    "properties": {
-        "material": {
-            "type": "string",
-            "description": "The material type of the filament",
-            "$ref": "#/definitions/string_limit"
-        },
-        "default_max_dry_temperature": {
-            "type": "integer"
-        },
-        "default_slicer_settings": {
-            "$ref": "#/definitions/slicer_settings",
-            "description": "The default slicer settings that should be used for this type of filament material. This will be used in any case where a filament does not specify its own \"slicer_settings\""
+            ],
+            "title": "SpecificSlicerSettings",
+            "type": "object"
         }
     },
     "additionalProperties": false,
+    "description": "Material type information.",
+    "properties": {
+        "material": {
+            "$ref": "#/$defs/LimitedString",
+            "description": "The material type of the filament"
+        },
+        "default_max_dry_temperature": {
+            "anyOf": [
+                {
+                    "type": "integer"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "title": "Default Max Dry Temperature"
+        },
+        "default_slicer_settings": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/SlicerSettings"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "The default slicer settings that should be used for this type of filament material. This will be used in any case where a filament does not specify its own \"slicer_settings\""
+        }
+    },
     "required": [
         "material"
-    ]
+    ],
+    "title": "Material",
+    "type": "object"
 }

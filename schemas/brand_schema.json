@@ -1,41 +1,54 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
+    "$defs": {
+        "CountryCode": {
+            "anyOf": [
+                {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "pattern": "^([A-Z]{2})$",
+                    "type": "string"
+                },
+                {
+                    "const": "Unknown",
+                    "type": "string"
+                }
+            ],
+            "description": "String type for ISO 3166-1 alpha-2 country codes.",
+            "title": "CountryCode"
         },
-        "country_code": {
-            "pattern": "^(([A-Z]{2})|Unknown)$"
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
         }
     },
+    "additionalProperties": false,
+    "description": "Brand/manufacturer information.",
     "properties": {
         "brand": {
-            "type": "string",
-            "description": "The name of the filament manufacture",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "The name of the filament manufacture"
         },
         "website": {
-            "type": "string",
-            "description": "The website of the filament manufacture",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "The website of the filament manufacture"
         },
         "logo": {
-            "type": "string",
-            "description": "A link to the logo for this brand",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "A link to the logo for this brand"
         },
         "origin": {
-            "type": "string",
-            "description": "The country of origin",
-            "$ref": "#/definitions/country_code"
+            "$ref": "#/$defs/CountryCode",
+            "description": "The country of origin"
         }
     },
     "required": [
         "brand",
-        "logo",
         "website",
+        "logo",
         "origin"
     ],
-    "additionalProperties": false
+    "title": "Brand",
+    "type": "object"
 }

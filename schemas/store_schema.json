@@ -1,60 +1,88 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "definitions": {
-        "string_limit": {
-            "maxLength": 1000
+    "$defs": {
+        "CountryCode": {
+            "anyOf": [
+                {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "pattern": "^([A-Z]{2})$",
+                    "type": "string"
+                },
+                {
+                    "const": "Unknown",
+                    "type": "string"
+                }
+            ],
+            "description": "String type for ISO 3166-1 alpha-2 country codes.",
+            "title": "CountryCode"
+        },
+        "LimitedString": {
+            "description": "String type with a maximum length constraint.",
+            "maxLength": 1000,
+            "title": "LimitedString",
+            "type": "string"
         }
     },
+    "additionalProperties": false,
+    "description": "Store information for purchase links.",
     "properties": {
         "id": {
-            "type": "string",
-            "description": "The ID for this store",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "The ID for this store"
         },
         "name": {
-            "type": "string",
-            "description": "The name of this store",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "The name of this store"
         },
         "storefront_url": {
-            "type": "string",
-            "description": "A link to the storefront of this store",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "A link to the storefront of this store"
         },
         "storefront_affiliate_link": {
-            "type": "string",
-            "description": "An affiliate link to the storefront of this store",
-            "$ref": "#/definitions/string_limit"
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/LimitedString"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "An affiliate link to the storefront of this store"
         },
         "logo": {
-            "type": "string",
-            "description": "A link to the logo for this store",
-            "$ref": "#/definitions/string_limit"
+            "$ref": "#/$defs/LimitedString",
+            "description": "A link to the logo for this store"
         },
         "ships_from": {
-            "type": [
-                "array",
-                "string"
+            "anyOf": [
+                {
+                    "items": {
+                        "$ref": "#/$defs/CountryCode"
+                    },
+                    "type": "array"
+                },
+                {
+                    "$ref": "#/$defs/CountryCode"
+                }
             ],
             "description": "A list of locations the shop linked ships from",
-            "items": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "$ref": "#/definitions/string_limit"
+            "title": "Ships From"
         },
         "ships_to": {
-            "type": [
-                "array",
-                "string"
+            "anyOf": [
+                {
+                    "items": {
+                        "$ref": "#/$defs/CountryCode"
+                    },
+                    "type": "array"
+                },
+                {
+                    "$ref": "#/$defs/CountryCode"
+                }
             ],
             "description": "A list of locations the shop linked ships to",
-            "items": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "$ref": "#/definitions/string_limit"
+            "title": "Ships To"
         }
     },
     "required": [
@@ -64,5 +92,7 @@
         "logo",
         "ships_from",
         "ships_to"
-    ]
+    ],
+    "title": "Store",
+    "type": "object"
 }
