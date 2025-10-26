@@ -1,23 +1,38 @@
-# Open Filament Database - WebUI
+# sv
 
-A modern CRUD (Create, Read, Update, Delete) interface built with SvelteKit for managing the Open Filament Database. This web application provides an intuitive way to browse, add, edit, and manage filament data from various manufacturers.
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-## 🛠️ Local Development Setup
+## Creating a project
 
-[See webui.md](/docs/webui.md)
+If you're seeing this, you've probably already done this step. Congrats!
 
-### Available Scripts
+```sh
+# create a new project in the current directory
+npx sv create
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `npm run check` - Run TypeScript and Svelte checks
+# create a new project in my-app
+npx sv create my-app
+```
 
-## TODO: 
-[ ] Rebuild closer to schemas so if they change it'd be almost automatic and not require rewriting parts of UI, Validation and backend
-[ ] Add emojis and alt codes to illegal characters, should be reflected in /data_validator.py
-[ ] Add slicer settings for filaments
-[ ] Add hex_variants, color_standards for instances
-[ ] Add image dimension validation to brand schema, got stuck in issues with what's available in browser vs server as all code needs to be available in both :/
-[ ] Add python validation
-[ ] Add export from zip option
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```sh
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
+
+## Building
+
+To create a production version of your app:
+
+```sh
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
