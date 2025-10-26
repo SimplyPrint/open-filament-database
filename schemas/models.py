@@ -5,11 +5,12 @@ This module defines all data models used in the database, which are also used
 to generate the JSON schemas automatically.
 """
 
-from typing import Literal, Optional, Union, List, Dict, Annotated
+from typing import Literal, Optional, Union, List, Dict, Annotated, get_origin, get_args
 from pydantic import BaseModel, Field, ConfigDict, StringConstraints, RootModel
+from pydantic.fields import FieldInfo
 import json
 from pathlib import Path
-
+import inspect
 
 # String length constraint used across all schemas
 MAX_STRING_LENGTH = 1000
@@ -237,12 +238,225 @@ def generate_json_schemas(output_dir: Optional[Path] = None) -> Dict[str, dict]:
     return schemas
 
 
+def type_to_zod(type_hint, field_info: Optional[FieldInfo] = None, is_optional: bool = False) -> str:
+    """
+    Convert a Python type hint to a Zod schema string.
+    """
+    origin = get_origin(type_hint)
+    args = get_args(type_hint)
+    
+    # Handle Union types (including Optional)
+    if origin is Union:
+        non_none_types = [t for t in args if t is not type(None)]
+        if len(non_none_types) == 1:
+            # This is Optional[T]
+            inner_type = type_to_zod(non_none_types[0], field_info, is_optional=True)
+            # Don't add nullable here since model_to_zod will handle it
+            return inner_type
+        else:
+            # Multiple types in union
+            union_types = [type_to_zod(t, field_info) for t in non_none_types]
+            schema = f"z.union([{', '.join(union_types)}])"
+            # Don't add nullable here for Optional unions, it will be handled by model_to_zod
+            return schema
+    
+    # Handle List types
+    if origin is list or origin is List:
+        element_type = type_to_zod(args[0] if args else str, field_info)
+        return f"z.array({element_type})"
+    
+    # Handle Dict types
+    if origin is dict or origin is Dict:
+        if args:
+            key_type = args[0]
+            value_type = args[1] if len(args) > 1 else 'any'
+            if key_type == str:
+                value_schema = type_to_zod(value_type, field_info)
+                return f"z.record({value_schema})"
+        return "z.record(z.any())"
+    
+    # Handle Literal types
+    if origin is Literal:
+        literals = [f'"{arg}"' if isinstance(arg, str) else str(arg) for arg in args]
+        if len(literals) == 1:
+            return f"z.literal({literals[0]})"
+        return f"z.union([{', '.join([f'z.literal({lit})' for lit in literals])}])"
+    
+    # Handle Annotated types (with constraints)
+    if origin is Annotated:
+        base_type = args[0]
+        constraints = args[1:]
+        
+        if base_type == str:
+            zod_str = "z.string()"
+            for constraint in constraints:
+                if isinstance(constraint, StringConstraints):
+                    if constraint.min_length is not None:
+                        zod_str += f".min({constraint.min_length})"
+                    if constraint.max_length is not None:
+                        zod_str += f".max({constraint.max_length})"
+                    if constraint.pattern is not None:
+                        zod_str += f".regex(/{constraint.pattern}/)"
+            return zod_str
+        
+        return type_to_zod(base_type, field_info)
+    
+    # Handle custom model types
+    if inspect.isclass(type_hint):
+        if issubclass(type_hint, RootModel):
+            # For RootModel types, we reference them as schemas
+            return type_hint.__name__ + "Schema"
+        elif issubclass(type_hint, BaseModel):
+            # For BaseModel types, we reference them as schemas
+            return type_hint.__name__ + "Schema"
+    
+    # Handle primitive types
+    if type_hint == str:
+        return "z.string()"
+    elif type_hint == int:
+        return "z.number().int()"
+    elif type_hint == float:
+        return "z.number()"
+    elif type_hint == bool:
+        return "z.boolean()"
+    
+    # Default case
+    return "z.any()"
+
+
+def model_to_zod(model_class) -> str:
+    """
+    Converts a Pydantic model to a Zod schema string.
+    For nested BaseModel or RootModel assume it already has a Zod schema defined elsewhere.
+    assumes z is already imported
+    """
+    
+    class_name = model_class.__name__
+    
+    # Handle RootModel types
+    if issubclass(model_class, RootModel):
+        # Get the root type annotation
+        root_type = model_class.model_fields['root'].annotation
+        
+        # Special handling for specific RootModel types
+        if class_name == "LimitedString":
+            return f"export const {class_name}Schema = z.string().max({MAX_STRING_LENGTH});"
+        elif class_name == "CountryCode":
+            return f'export const {class_name}Schema = z.union([z.string().length(2).regex(/^[A-Z]{{2}}$/), z.literal("Unknown")]);'
+        elif class_name == "Color":
+            return f"export const {class_name}Schema = z.string().regex(/^#?[a-fA-F0-9]{{6}}$/);"
+        elif class_name == "Colors":
+            return f"export const {class_name}Schema = z.union([ColorSchema, z.array(ColorSchema)]);"
+        elif class_name == "FilamentSizeArray":
+            return f"export const {class_name}Schema = z.array(FilamentSizeSchema).min(1);"
+        else:
+            # Generic RootModel handling
+            zod_type = type_to_zod(root_type)
+            return f"export const {class_name}Schema = {zod_type};"
+    
+    # Handle BaseModel types
+    fields_list = []
+    
+    for field_name, field_info in model_class.model_fields.items():
+        field_type = field_info.annotation
+        default_value = field_info.default
+        
+        # Generate the Zod type
+        zod_type = type_to_zod(field_type, field_info)
+        
+        # Check if field has Optional type (Union with None)
+        origin = get_origin(field_type)
+        args = get_args(field_type)
+        is_optional_type = (
+            origin is Union and type(None) in args
+        )
+        
+        # Add nullable/optional modifiers based on default value
+        if is_optional_type:
+            # Field is Optional[T] in type hint
+            zod_type += ".nullable()"
+        elif default_value is not ... and str(default_value) != "PydanticUndefined":
+            # Field has a default value but is not Optional
+            if default_value is None:
+                zod_type += ".nullable()"
+            else:
+                # Has a non-None default value
+                default_str = f'"{default_value}"' if isinstance(default_value, str) else str(default_value).lower() if isinstance(default_value, bool) else str(default_value)
+                zod_type += f".default({default_str})"
+        
+        # Add description if present
+        if field_info.description:
+            description = field_info.description.replace('"', '\\"')
+            zod_type += f'.describe("{description}")'
+        
+        fields_list.append(f'  {field_name}: {zod_type}')
+    
+    # Build the complete schema
+    fields_str = ',\n'.join(fields_list)
+    
+    # Add .strict() for models with extra='forbid'
+    strict_modifier = ""
+    if hasattr(model_class, 'model_config') and model_class.model_config.get('extra') == 'forbid':
+        strict_modifier = ".strict()"
+    
+    return f"export const {class_name}Schema = z.object({{\n{fields_str}\n}}){strict_modifier};"
+
+
+def models_to_zod() -> str:
+    """
+    Converts all defined Pydantic models to Zod schema strings.
+    """
+    
+    output = 'import { z } from "zod";\n\n'
+    output += f"// Maximum string length used across all schemas\n"
+    output += f"const MAX_STRING_LENGTH = {MAX_STRING_LENGTH};\n\n"
+    
+    # Define the order of models to ensure dependencies are defined first
+    model_classes = [
+        # RootModel types first (they are type aliases essentially)
+        LimitedString,
+        CountryCode,
+        Color,
+        Colors,
+        
+        # BaseModel types in dependency order
+        Store,
+        Brand,
+        GenericSlicerSettings,
+        SpecificSlicerSettings,
+        SlicerSettings,
+        Material,
+        SlicerIDs,
+        Filament,
+        ColorStandards,
+        Traits,
+        Variant,
+        PurchaseLink,
+        FilamentSize,
+        FilamentSizeArray,
+    ]
+    
+    for model_class in model_classes:
+        comment = f"// {model_class.__doc__}" if model_class.__doc__ else f"// {model_class.__name__}"
+        output += comment + "\n"
+        output += model_to_zod(model_class) + "\n\n"
+    
+    # Add TypeScript type exports
+    output += "// TypeScript type exports\n"
+    for model_class in model_classes:
+        class_name = model_class.__name__
+        output += f"export type {class_name} = z.infer<typeof {class_name}Schema>;\n"
+    
+    return output
+
+
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate JSON schemas from Pydantic models.")
     parser.add_argument("--dry-run", action="store_true", help="Print schemas to console instead of writing to files")
     parser.add_argument('--generate', action='store_true', help="Generate JSON schemas to the specified directory")
+    parser.add_argument('--zod', action='store_true', help="Generate Zod schemas")
     parser.add_argument('dir', nargs='?', default=None, help="Output directory for generated schemas")
     args = parser.parse_args()
 
@@ -255,6 +469,9 @@ if __name__ == '__main__':
     elif args.generate:
         output_dir = Path(__file__).parent if args.dir is None else Path(args.dir)
         generate_json_schemas(output_dir)
+    elif args.zod:
+        zod_output = models_to_zod()
+        print(zod_output)
     else:
         parser.print_help()
         exit(1)

@@ -2,10 +2,8 @@ version: '3'
 
 tasks:
   generate_schemas:
-    dir: ''
     cmds:
       - uv run schemas/models.py --generate schemas
   generate_zod:
-    dir: 'schemas'
     cmds:
-      - uv run -m pydantic2zod model "../webui/src/lib/validation/generated.ts"
+      - uv run schemas/models.py --zod > webui/src/lib/validation.ts
