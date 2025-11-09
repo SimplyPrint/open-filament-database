@@ -1,0 +1,8 @@
+{
+  "material": "PETG",
+  "default_slicer_settings": {
+    "orcaslicer": {
+      "profile_name": "profiles\\orcaslicer\\BBL\\Overture\\OVERTURE PETG Basic @Bambu Lab P1P 0.4 nozzle.json"
+    }
+  }
+}
