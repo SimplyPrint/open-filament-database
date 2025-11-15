@@ -38,9 +38,11 @@ export const traitsSchema = z.object({
 export const filamentSizesSchema = z.array(filamentSizeSchema).min(1);
 export const purchaseLinksSchema = z.array(purchaseLinkSchema);
 
+export const filamentVariantHex = z.string().regex(/^#?[a-fA-F0-9]{6}$/, 'Must be a valid hex code (#RRGGBB)');
+
 export const filamentVariantSchema = z.object({
   color_name: z.string(),
-  color_hex: z.string().regex(/^#?[a-fA-F0-9]{6}$/, 'Must be a valid hex code (#RRGGBB)'),
+  color_hex: z.union([filamentVariantHex, z.array(filamentVariantHex).min(1)]).default(""),
   discontinued: z.boolean().default(false),
   traits: traitsSchema.optional(),
   sizes: filamentSizesSchema,

@@ -10,8 +10,8 @@
   import Form from '../components/form.svelte';
   import DeleteButton from '../components/deleteButton.svelte';
   import SubmitButton from '../components/submitButton.svelte';
+  import HexesList from './components/hexesList.svelte';
   import TextField from '../components/textField.svelte';
-  import HexPicker from './components/hexPicker.svelte';
   import Size from './components/size.svelte';
   import Trait from './components/trait.svelte';
   import { superForm } from 'sveltekit-superforms';
@@ -131,12 +131,11 @@
         required={true}
       />
 
-      <HexPicker
-        id="color_hex"
-        title="Color hex"
-        description="Choose the color or enter the hex code that best represents this filament color"
-        placeholder="#RRGGBB"
-        bind:formVar={$form.color_hex}
+      <HexesList
+        idPrefix="color_hex_"
+        title="Color hexes"
+        description="Choose the color(s) or enter the hex code that best represents this filament color"
+        bind:hexes={$form.color_hex}
         errorVar={$errors.color_hex}
         required={true}
       />
