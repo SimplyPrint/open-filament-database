@@ -1,13 +1,14 @@
 [
   {
-    "filament_weight": 1000.0,
+    "filament_weight": 1000,
     "diameter": 1.75,
+    "ean": "6975337036104",
     "purchase_links": [
       {
         "store_id": "BBLStore",
         "url": "https://us.store.bambulab.com/collections/petg/products/petg-translucent?variant=42720027771016",
-        "affiliate": false,
-        "spool_refill": true
+        "spool_refill": true,
+        "affiliate": false
       }
     ]
   }
