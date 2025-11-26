@@ -1,13 +1,14 @@
 [
   {
-    "filament_weight": 1000.0,
+    "filament_weight": 1000,
     "diameter": 1.75,
+    "ean": "921085258297",
     "purchase_links": [
       {
         "store_id": "BBLStore",
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-matte?variant=40489682108552",
-        "affiliate": false,
-        "spool_refill": true
+        "spool_refill": true,
+        "affiliate": false
       }
     ]
   }
