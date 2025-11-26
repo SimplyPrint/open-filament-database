@@ -61,7 +61,7 @@
     </EditModal>
   </div>
 
-  <div class="flex space-x-4 space-y-4 mt-2">
+  <div class="flex flex-wrap space-x-4 space-y-4 mt-2">
     {#key [filteredFilamentKeys, data.materialData.filaments]}
       {#each filteredFilamentKeys as filamentKey}
         {#if data.materialData.filaments[filamentKey]}
