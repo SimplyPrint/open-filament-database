@@ -1,13 +1,14 @@
 [
   {
-    "filament_weight": 1000.0,
+    "filament_weight": 1000,
     "diameter": 1.75,
+    "ean": "6977252427203",
     "purchase_links": [
       {
         "store_id": "BBLStore",
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-basic-filament?variant=43045591679112",
-        "affiliate": false,
-        "spool_refill": true
+        "spool_refill": true,
+        "affiliate": false
       }
     ]
   }

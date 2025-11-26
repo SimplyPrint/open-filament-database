@@ -11,5 +11,18 @@
         "affiliate": false
       }
     ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "ean": "921177428102",
+    "purchase_links": [
+      {
+        "store_id": "3deksperten",
+        "url": "https://3deksperten.dk/products/bambu-lab-pla-matte-dark-blue-1-75mm-1kg-refill",
+        "spool_refill": true,
+        "affiliate": false
+      }
+    ]
   }
 ]

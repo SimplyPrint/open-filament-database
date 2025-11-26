@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from "$app/state";
   import Fa from 'svelte-fa';
-  import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+  import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
   const crumbs = $derived(page.url.pathname.split('/').map(decodeURIComponent).filter(Boolean));
     
@@ -17,6 +17,6 @@
     onclick={goBack}
     aria-label="Go back"
   >
-    <Fa icon={faArrowLeft} />
+    <Fa icon={faArrowUp} />
   </button>
 </menu>
