@@ -1,0 +1,197 @@
+name: Build Dataset
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'stores/**'
+      - 'builder/**'
+      - 'schemas/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'stores/**'
+      - 'builder/**'
+      - 'schemas/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Dataset version (e.g., 2025.11.1)'
+        required: false
+        type: string
+      create_release:
+        description: 'Create a GitHub release'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # No external dependencies needed for the builder
+
+      - name: Generate version
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(date +%Y.%m).${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build dataset
+        run: |
+          python -m builder.build \
+            --version "${{ steps.version.outputs.version }}" \
+            --base-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/v1"
+
+      - name: List generated files
+        run: |
+          echo "=== Generated Files ==="
+          find dist -type f | head -100
+          echo ""
+          echo "=== File counts ==="
+          echo "JSON files: $(find dist -name '*.json' | wc -l)"
+          echo "CSV files: $(find dist -name '*.csv' | wc -l)"
+          echo "SQLite files: $(find dist -name '*.sqlite' | wc -l)"
+          echo ""
+          echo "=== Manifest ==="
+          cat dist/manifest.json | head -50
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 30
+
+      # Deploy Static API to GitHub Pages (only on main branch)
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/api
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # Create Release (manual trigger or tagged push)
+      - name: Create Release
+        if: |
+          (github.event_name == 'workflow_dispatch' && inputs.create_release) ||
+          (github.ref == 'refs/heads/main' && github.event_name == 'push')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dataset-v${{ steps.version.outputs.version }}
+          name: Dataset v${{ steps.version.outputs.version }}
+          body: |
+            ## Open Filament Database v${{ steps.version.outputs.version }}
+            
+            ### Downloads
+            
+            | Format | Description | File |
+            |--------|-------------|------|
+            | **SQLite** | Relational database with full schema | `open_filament_db_v1.sqlite` |
+            | **SQLite (compressed)** | XZ compressed SQLite | `open_filament_db_v1.sqlite.xz` |
+            | **JSON** | Complete dataset in one file | `all.json` |
+            | **JSON (compressed)** | Gzipped JSON | `all.json.gz` |
+            | **NDJSON** | Newline-delimited JSON for streaming | `all.ndjson` |
+            | **CSV** | Multiple CSV files | `csv/` directory |
+            
+            ### Static API
+            
+            The static API is deployed at:
+            `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/api/v1/`
+            
+            ### Endpoints
+            
+            - `/index.json` - API root with stats and endpoints
+            - `/brands/index.json` - List of all brands
+            - `/brands/{slug}.json` - Individual brand with products
+            - `/materials/index.json` - List of material families
+            - `/products/index.json` - List of all products
+            - `/products/{id}.json` - Individual product with variants
+            - `/stores/index.json` - List of stores
+            - `/search/autocomplete.json` - Search index
+            
+            ### Checksums
+            
+            See `manifest.json` for SHA256 checksums of all files.
+          files: |
+            dist/json/all.json
+            dist/json/all.json.gz
+            dist/json/all.ndjson
+            dist/sqlite/open_filament_db_v1.sqlite
+            dist/sqlite/open_filament_db_v1.sqlite.xz
+            dist/manifest.json
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+  # Validate the build
+  validate:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dataset-${{ needs.build.outputs.version || '2025.11.0' }}
+          path: dist/
+
+      - name: Validate JSON
+        run: |
+          echo "Validating JSON files..."
+          for f in dist/json/*.json; do
+            python -m json.tool "$f" > /dev/null && echo "✓ $f" || echo "✗ $f"
+          done
+
+      - name: Validate SQLite
+        run: |
+          echo "Validating SQLite database..."
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "SELECT COUNT(*) FROM brand;"
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "SELECT COUNT(*) FROM product;"
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "SELECT COUNT(*) FROM variant;"
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "SELECT COUNT(*) FROM spool;"
+          echo "✓ SQLite database is valid"
+
+      - name: Test SQLite queries
+        run: |
+          echo "Testing example queries..."
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "
+            SELECT b.name, COUNT(p.id) as products
+            FROM brand b
+            LEFT JOIN product p ON p.brand_id = b.id
+            GROUP BY b.id
+            ORDER BY products DESC
+            LIMIT 10;
+          "
+          echo ""
+          sqlite3 dist/sqlite/open_filament_db_v1.sqlite "
+            SELECT * FROM v_full_spool LIMIT 5;
+          "
