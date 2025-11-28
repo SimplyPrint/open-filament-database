@@ -324,6 +324,56 @@ class StoreIdValidator(BaseValidator):
         return result
 
 
+class GTINValidator(BaseValidator):
+    """Validates GTIN/EAN fields across data (server-side rules)."""
+
+    GTIN_RE = re.compile(r"^[0-9]{12,13}$")
+    EAN_RE = re.compile(r"^[0-9]{13}$")
+
+    def validate_gtin_ean(self, data_dir: Path) -> ValidationResult:
+        result = ValidationResult()
+
+        for sizes_file in data_dir.glob("**/sizes.json"):
+            sizes_data = load_json(sizes_file)
+            if not sizes_data:
+                continue
+
+            for idx, size in enumerate(sizes_data):
+                gtin = size.get("gtin")
+                ean = size.get("ean")
+
+                # Optional fields, but if present must match regex
+                if gtin is not None:
+                    if not isinstance(gtin, str) or not self.GTIN_RE.fullmatch(gtin):
+                        result.add_error(ValidationError(
+                            level=ValidationLevel.ERROR,
+                            category="GTIN",
+                            message=f"Invalid gtin at $[{idx}]: must be 12 or 13 digits",
+                            path=sizes_file
+                        ))
+
+                if ean is not None:
+                    if not isinstance(ean, str) or not self.EAN_RE.fullmatch(ean):
+                        result.add_error(ValidationError(
+                            level=ValidationLevel.ERROR,
+                            category="EAN",
+                            message=f"Invalid ean at $[{idx}]: must be exactly 13 digits",
+                            path=sizes_file
+                        ))
+
+                # When both present: if both 13 digits, must match. If gtin is 12, allow ean empty/different.
+                if isinstance(gtin, str) and isinstance(ean, str):
+                    if len(gtin) == 13 and len(ean) == 13 and gtin != ean:
+                        result.add_error(ValidationError(
+                            level=ValidationLevel.ERROR,
+                            category="GTIN/EAN",
+                            message=f"Mismatch at $[{idx}]: gtin and ean are both 13 digits but not equal",
+                            path=sizes_file
+                        ))
+
+        return result
+
+
 class MissingFileValidator(BaseValidator):
     """Validates that required JSON files exist."""
 
@@ -728,6 +778,12 @@ class ValidationOrchestrator:
         validator = StoreIdValidator(self.schema_cache)
         return validator.validate_store_ids(self.data_dir, self.stores_dir)
 
+    def validate_gtin(self) -> ValidationResult:
+        """Validate GTIN/EAN rules."""
+        print("Validating GTIN/EAN...")
+        validator = GTINValidator(self.schema_cache)
+        return validator.validate_gtin_ean(self.data_dir)
+
     def validate_all(self) -> ValidationResult:
         """Run all validations."""
         result = ValidationResult()
@@ -741,6 +797,7 @@ class ValidationOrchestrator:
         result.merge(self.validate_logo_files())
         result.merge(self.validate_folder_names())
         result.merge(self.validate_store_ids())
+        result.merge(self.validate_gtin())
 
         return result
 

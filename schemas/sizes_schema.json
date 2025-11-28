@@ -26,14 +26,19 @@
                 "type": "number",
                 "description": "The diameter of the core of the spool"
             },
-            "ean": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
-            "article_number": {
-                "type": "string",
-                "$ref": "#/definitions/string_limit"
-            },
+                "gtin": {
+                    "type": "string",
+                    "description": "Global Trade Item Number (GTIN-12 or GTIN-13)"
+                },
+                "ean": {
+                    "type": "string",
+                    "$ref": "#/definitions/string_limit",
+                    "description": "(deprecated) legacy EAN alias for gtin"
+                },
+                "article_number": {
+                    "type": "string",
+                    "$ref": "#/definitions/string_limit"
+                },
             "barcode_identifier": {
                 "type": "string",
                 "$ref": "#/definitions/string_limit"
