@@ -136,6 +136,27 @@
     required={true}
   />
 
+  <div>
+    <label for="material_class" class="block font-medium mb-1">
+      Material Class
+    </label>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+      Select whether this is a Filament (FFF) or Resin (SLA)
+    </p>
+    <select
+      id="material_class"
+      name="material_class"
+      class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      bind:value={$form.material_class}
+    >
+      <option value="FFF">FFF (Filament)</option>
+      <option value="SLA">SLA (Resin)</option>
+    </select>
+    {#if $errors.material_class}
+      <span class="text-red-600 text-xs">{$errors.material_class}</span>
+    {/if}
+  </div>
+
   <NumberField
     id="default_max_dry_temperature"
     title="Default Max Dry Temperature"

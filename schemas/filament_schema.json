@@ -41,16 +41,20 @@
                     "description": "Generic options that will automatically be mapped to the correct config definition for each slicer. Slicer specific settings are applied first, then these are applied on top.",
                     "properties": {
                         "first_layer_bed_temp": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "The target bed temperature for the first layer in the generated profile. Should ideally be within [min_bed_temperature, max_bed_temperature]."
                         },
                         "first_layer_nozzle_temp": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "The target nozzle temperature for the first layer in the generated profile. Should ideally be within [min_print_temperature, max_print_temperature]."
                         },
                         "bed_temp": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "The target bed temperature for the generated profile. Should ideally be within [min_bed_temperature, max_bed_temperature]."
                         },
                         "nozzle_temp": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "The target nozzle temperature for the generated profile. Should ideally be within [min_print_temperature, max_print_temperature]."
                         }
                     }
                 }
@@ -77,8 +81,59 @@
             "description": "The density of the filament (in g/cm³)",
             "default": 1.24
         },
+        "shore_hardness_a": {
+            "type": "integer",
+            "description": "Hardness of the material on the Shore A hardness scale"
+        },
+        "shore_hardness_d": {
+            "type": "integer",
+            "description": "Hardness of the material on the Shore D hardness scale"
+        },
+        "certifications": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Certifications the material has"
+        },
         "max_dry_temperature": {
             "type": "integer"
+        },
+        "min_print_temperature": {
+            "type": "integer",
+            "description": "Minimum recommended nozzle temperature for printing (°C)"
+        },
+        "max_print_temperature": {
+            "type": "integer",
+            "description": "Maximum recommended nozzle temperature for printing (°C)"
+        },
+        "preheat_temperature": {
+            "type": "integer",
+            "description": "Recommended nozzle temperature for preheating/load cell bed leveling (°C)"
+        },
+        "min_bed_temperature": {
+            "type": "integer",
+            "description": "Minimum recommended heatbed temperature (°C)"
+        },
+        "max_bed_temperature": {
+            "type": "integer",
+            "description": "Maximum recommended heatbed temperature (°C)"
+        },
+        "min_chamber_temperature": {
+            "type": "integer",
+            "description": "Minimum recommended temperature of the chamber (°C)"
+        },
+        "max_chamber_temperature": {
+            "type": "integer",
+            "description": "Maximum recommended temperature of the chamber (°C)"
+        },
+        "chamber_temperature": {
+            "type": "integer",
+            "description": "Ideal chamber temperature for printing (°C)"
+        },
+        "min_nozzle_diameter": {
+            "type": "number",
+            "description": "Minimum nozzle diameter recommended for printing this material (mm)"
         },
         "data_sheet_url": {
             "type": "string",
