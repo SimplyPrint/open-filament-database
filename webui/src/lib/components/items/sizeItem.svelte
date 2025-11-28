@@ -63,12 +63,6 @@
             rel="noopener noreferrer"
             class="flex items-center justify-between text-sm text-blue-600 dark:text-blue-400 hover:underline">
             <span>{link.store_id}</span>
-            {#if link.affiliate}
-              <span
-                class="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
-                Affiliate
-              </span>
-            {/if}
           </a>
         {/each}
       </div>

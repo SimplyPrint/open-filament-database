@@ -8,8 +8,7 @@
     "purchase_links": [
       {
         "store_id": "amazon",
-        "url": "https://amzn.to/4o1YmfY",
-        "affiliate": true
+        "url": "https://amzn.to/4o1YmfY"
       }
     ]
   }

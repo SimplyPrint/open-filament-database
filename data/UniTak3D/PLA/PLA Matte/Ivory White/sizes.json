@@ -9,8 +9,7 @@
     "purchase_links": [
       {
         "store_id": "UniTak3D",
-        "url": "https://amzn.to/42RMnJz",
-        "affiliate": false
+        "url": "https://amzn.to/42RMnJz"
       }
     ]
   }

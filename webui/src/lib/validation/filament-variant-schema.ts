@@ -9,7 +9,6 @@ export const purchaseLinkSchema = z.object({
       return url.startsWith('http://') || url.startsWith('https://');
     }, 'URL must use HTTP or HTTPS protocol')
     .default('https://'),
-  affiliate: z.boolean().default(false),
   spool_refill: z.boolean().optional(),
   ships_from: z.union([z.string(), z.array(z.string())]).optional(),
   ships_to: z.union([z.string(), z.array(z.string())]).optional(),

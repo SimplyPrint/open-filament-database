@@ -21,7 +21,7 @@
 
     tempLinks.update(items => [
       ...items,
-      { id: Math.max(0, ...items.map(i => i.id)) + 1, value: { store_id: undefined, url: undefined, affiliate: false }},
+      { id: Math.max(0, ...items.map(i => i.id)) + 1, value: { store_id: undefined, url: undefined }},
     ]);
   }
 
