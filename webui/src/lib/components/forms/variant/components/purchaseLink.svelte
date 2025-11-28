@@ -7,7 +7,7 @@
   import Fa from "svelte-fa";
   import PurchaseDropdown from "./purchaseDropdown.svelte";
 
-  export let link, purchaseIndex, sizeIndex, removePurchaseLink, errors, stores;
+  export let link, purchaseIndex, sizeIndex, removePurchaseLink, errors, stores, sizeSpoolRefill;
   let localLink = writable({});
 
   onMount(() => {
@@ -72,14 +72,13 @@
         errorVar={$errors?.sizes?.[sizeIndex]?.purchase_links?.[purchaseIndex]?.affiliate?.[0]}
         required={true}
       />
-
-      <PurchaseCheck
-        id="sizes_{sizeIndex}_spool_refill_{purchaseIndex}"
-        title="Is spool refill"
-        bind:formVar={$localLink.spool_refill}
-        errorVar={$errors?.sizes?.[sizeIndex]?.purchase_links?.[purchaseIndex]?.spool_refill?.[0]}
-      />
     </div>
+
+    {#if sizeSpoolRefill}
+      <div class="text-sm text-blue-700 dark:text-blue-300">
+        This size is marked as refill. All purchase links inherit this.
+      </div>
+    {/if}
 
     <div class="grid grid-cols-2 gap-3">
       <PurchaseTextField
