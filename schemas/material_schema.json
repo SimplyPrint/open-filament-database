@@ -64,6 +64,12 @@
             "description": "The material type of the filament",
             "$ref": "#/definitions/string_limit"
         },
+        "material_class": {
+            "type": "string",
+            "enum": ["FFF", "SLA"],
+            "default": "FFF",
+            "description": "The class of the material (FFF for filament, SLA for resin)"
+        },
         "default_max_dry_temperature": {
             "type": "integer"
         },

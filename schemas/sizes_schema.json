@@ -26,6 +26,18 @@
                 "type": "number",
                 "description": "The diameter of the core of the spool"
             },
+            "container_width": {
+                "type": "integer",
+                "description": "Width of the filament spool (in mm)"
+            },
+            "container_outer_diameter": {
+                "type": "integer",
+                "description": "Diameter of the spool (in mm)"
+            },
+            "container_hole_diameter": {
+                "type": "integer",
+                "description": "Diameter of the center hole of the spool (in mm)"
+            },
             "ean": {
                 "type": "string",
                 "$ref": "#/definitions/string_limit"

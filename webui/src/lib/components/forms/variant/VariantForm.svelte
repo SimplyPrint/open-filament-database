@@ -18,8 +18,19 @@
   import { zodClient } from 'sveltekit-superforms/adapters';
   import { stripOfIllegalChars } from '$lib/globalHelpers';
 
+  import { traitCategories } from './traitCategories';
+  import TraitGroup from './components/traitGroup.svelte';
+
   type formType = 'edit' | 'create';
   let { defaultForm, formType, brandName, materialName, filamentName, stores, colorData = null } = $props();
+
+  function formatTraitName(name: string) {
+    const acronyms = ['esd', 'emi', 'ipa', 'uv', 'ptfe', 'fff', 'sla'];
+    return name
+      .split('_')
+      .map(word => acronyms.includes(word.toLowerCase()) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 
   const {
     form,
@@ -149,15 +160,21 @@
 
       <fieldset>
         <legend class="block font-medium mb-2">Material Traits</legend>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Select all special properties that apply to this filament variant
         </p>
-        <div class="grid grid-cols-2 gap-4">
-          {#each Object.keys(traitsSchema.shape) as trait}
-            <Trait
-              id={trait}
-              title={capitalizeFirstLetter(trait)}
-              bind:formVar={$tempTraits[trait]} />
+        <div class="max-h-[600px] overflow-y-auto pr-1 space-y-3">
+          {#each traitCategories as category}
+            <TraitGroup title={category.name} icon={category.icon}>
+              {#each category.traits as trait}
+                {#if traitsSchema.shape[trait]}
+                  <Trait
+                    id={trait}
+                    title={formatTraitName(trait)}
+                    bind:formVar={$tempTraits[trait]} />
+                {/if}
+              {/each}
+            </TraitGroup>
           {/each}
         </div>
       </fieldset>

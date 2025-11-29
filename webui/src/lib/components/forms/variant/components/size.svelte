@@ -99,6 +99,33 @@
       errorVar={$errors?.sizes?.[sizeIndex]?.spool_core_diameter}
     />
   </div>
+
+  <div class="flex space-x-2">
+    <NumberField
+      id="container_width_{sizeIndex}"
+      title="Container Width (mm)"
+      description='Width of the filament spool'
+      placeholder="75"
+      bind:formVar={size.container_width}
+      errorVar={$errors?.sizes?.[sizeIndex]?.container_width}
+    />
+    <NumberField
+      id="container_outer_diameter_{sizeIndex}"
+      title="Container Outer Dia (mm)"
+      description='Diameter of the spool'
+      placeholder="200"
+      bind:formVar={size.container_outer_diameter}
+      errorVar={$errors?.sizes?.[sizeIndex]?.container_outer_diameter}
+    />
+    <NumberField
+      id="container_hole_diameter_{sizeIndex}"
+      title="Container Hole Dia (mm)"
+      description='Diameter of the center hole'
+      placeholder="52"
+      bind:formVar={size.container_hole_diameter}
+      errorVar={$errors?.sizes?.[sizeIndex]?.container_hole_diameter}
+    />
+  </div>
   
   <div class="flex space-x-2">
     <TextField

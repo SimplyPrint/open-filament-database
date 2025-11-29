@@ -24,6 +24,7 @@ export const slicerSettingsSchema = z.object({
 export const filamentMaterialSchema = z
   .object({
     material: z.string(),
+    material_class: z.enum(['FFF', 'SLA']).default('FFF').optional(),
     default_max_dry_temperature: functioningNumber,
     default_slicer_settings: slicerSettingsSchema.optional()
   });
