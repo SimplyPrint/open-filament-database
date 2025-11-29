@@ -80,6 +80,14 @@
     />
   </div>
 
+  <BigCheck
+    idPrefix="size_spool_refill_"
+    title="This is a refill for a reusable spool"
+    description="This is a refill for a reusable spool"
+    bind:formVar={size.spool_refill}
+    errorVar={$errors?.sizes?.[sizeIndex]?.spool_refill}
+  />
+
   <div class="flex space-x-2">
     <NumberField
       id="empty_spool_weight_{sizeIndex}"
@@ -149,6 +157,7 @@
             sizeIndex={sizeIndex}
             removePurchaseLink={() => removePurchaseLink(index)}
             stores={stores}
+            sizeSpoolRefill={size.spool_refill}
           />
         {/each}
       </div>
