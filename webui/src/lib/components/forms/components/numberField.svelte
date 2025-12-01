@@ -10,9 +10,9 @@
         <span class="text-red-500">*</span>
       {/if}
     </label>
-    <label for={id} class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
       {description}
-    </label>
+    </p>
   </div>
   
   <div>

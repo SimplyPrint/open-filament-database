@@ -116,16 +116,17 @@
     />
     
     <BigCheck
-      idPrefix="size_discontinued_{sizeIndex}"
+      title="Discontinued"
       description="Select if this size is discontinued"
+      id="size_discontinued_{sizeIndex}"
       bind:formVar={size.discontinued}
       errorVar={$errors?.sizes?.[sizeIndex]?.discontinued}
     />
 
     <BigCheck
-      idPrefix="size_spool_refill_{sizeIndex}"
       title="Spool refill"
       description="This is a refill for a reusable spool"
+      id="size_spool_refill_{sizeIndex}"
       bind:formVar={size.spool_refill}
       errorVar={$errors?.sizes?.[sizeIndex]?.spool_refill}
     />
