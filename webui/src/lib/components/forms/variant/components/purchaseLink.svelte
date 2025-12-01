@@ -7,7 +7,7 @@
   import Fa from "svelte-fa";
   import PurchaseDropdown from "./purchaseDropdown.svelte";
 
-  export let link, purchaseIndex, sizeIndex, removePurchaseLink, errors, stores, sizeSpoolRefill;
+  export let link, purchaseIndex, sizeIndex, removePurchaseLink, errors, stores;
   let localLink = writable({});
 
   onMount(() => {
@@ -73,12 +73,6 @@
         required={true}
       />
     </div>
-
-    {#if sizeSpoolRefill}
-      <div class="text-sm text-blue-700 dark:text-blue-300">
-        This size is marked as refill. All purchase links inherit this.
-      </div>
-    {/if}
 
     <div class="grid grid-cols-2 gap-3">
       <PurchaseTextField

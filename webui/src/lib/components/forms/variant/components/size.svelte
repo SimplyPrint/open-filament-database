@@ -58,7 +58,7 @@
     </button>
   </div>
 
-  <div class="flex space-x-2">
+  <div class="grid grid-cols-2 gap-2">
     <NumberField
       id="filament_weight_{sizeIndex}"
       title="Weight (g)"
@@ -78,17 +78,7 @@
       errorVar={$errors?.sizes?.[sizeIndex]?.diameter}
       required={true}
     />
-  </div>
 
-  <BigCheck
-    idPrefix="size_spool_refill_"
-    title="This is a refill for a reusable spool"
-    description="This is a refill for a reusable spool"
-    bind:formVar={size.spool_refill}
-    errorVar={$errors?.sizes?.[sizeIndex]?.spool_refill}
-  />
-
-  <div class="flex space-x-2">
     <NumberField
       id="empty_spool_weight_{sizeIndex}"
       title="Spool weight (g)"
@@ -106,9 +96,7 @@
       bind:formVar={size.spool_core_diameter}
       errorVar={$errors?.sizes?.[sizeIndex]?.spool_core_diameter}
     />
-  </div>
-  
-  <div class="flex space-x-2">
+
     <TextField
       id="ean_{sizeIndex}"
       title="EAN"
@@ -126,15 +114,22 @@
       bind:formVar={size.article_number}
       errorVar={$errors?.sizes?.[sizeIndex]?.article_number}
     />
+    
+    <BigCheck
+      idPrefix="size_discontinued_{sizeIndex}"
+      description="Select if this size is discontinued"
+      bind:formVar={size.discontinued}
+      errorVar={$errors?.sizes?.[sizeIndex]?.discontinued}
+    />
+
+    <BigCheck
+      idPrefix="size_spool_refill_{sizeIndex}"
+      title="Spool refill"
+      description="This is a refill for a reusable spool"
+      bind:formVar={size.spool_refill}
+      errorVar={$errors?.sizes?.[sizeIndex]?.spool_refill}
+    />
   </div>
-
-  <BigCheck
-    idPrefix="size_"
-    description="Select if this size is discontinued"
-    bind:formVar={size.discontinued}
-    errorVar={$errors?.sizes?.[sizeIndex]?.discontinued}
-  />
-
 
   <fieldset>
     <div class="flex items-center justify-between mb-4">
@@ -157,7 +152,6 @@
             sizeIndex={sizeIndex}
             removePurchaseLink={() => removePurchaseLink(index)}
             stores={stores}
-            sizeSpoolRefill={size.spool_refill}
           />
         {/each}
       </div>
