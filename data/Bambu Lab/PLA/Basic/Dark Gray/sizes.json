@@ -8,6 +8,13 @@
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-basic-filament?variant=42844629008520",
         "affiliate": false
       }
-    ]
+    ],
+    "gtin": "6975337038980"
+  },
+  {
+    "filament_weight": 1000.0,
+    "diameter": 1.75,
+    "spool_refill": true,
+    "gtin": "6975337039075"
   }
 ]

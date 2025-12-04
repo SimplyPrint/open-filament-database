@@ -8,7 +8,8 @@
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-matte?variant=42259062620296",
         "affiliate": false
       }
-    ]
+    ],
+    "gtin": "6975337038177"
   },
   {
     "filament_weight": 1000,
@@ -20,5 +21,11 @@
         "affiliate": false
       }
     ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "spool_refill": true,
+    "gtin": "6975337035053"
   }
 ]

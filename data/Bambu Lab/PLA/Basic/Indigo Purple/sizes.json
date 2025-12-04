@@ -8,7 +8,9 @@
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-basic-filament?variant=43045597446280",
         "affiliate": false
       }
-    ]
+    ],
+    "article_number": "A00-P2-1.75-1000-SPLFREE",
+    "gtin": "6977252429115"
   },
   {
     "filament_weight": 1000,
@@ -21,5 +23,11 @@
         "affiliate": false
       }
     ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "spool_refill": true,
+    "gtin": "6977252427227"
   }
 ]

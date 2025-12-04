@@ -14,7 +14,8 @@
         "url": "https://us.store.bambulab.com/collections/petg/products/petg-hf?variant=42735939715208",
         "affiliate": false
       }
-    ]
+    ],
+    "article_number": "G02-K0-1.75-1000-SPL"
   },
   {
     "filament_weight": 1000,
@@ -27,5 +28,17 @@
         "affiliate": false
       }
     ]
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "spool_refill": true,
+    "gtin": "6975337038221"
+  },
+  {
+    "filament_weight": 1000,
+    "diameter": 1.75,
+    "spool_refill": true,
+    "gtin": "6975337038580"
   }
 ]
