@@ -141,6 +141,7 @@
       />
 
       <BigCheck
+        idPrefix="variant_"
         bind:formVar={$form.discontinued}
         errorVar={$errors.discontinued}
         description="Select if this colour/variant is discontinued"

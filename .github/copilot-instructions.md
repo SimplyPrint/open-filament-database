@@ -2,7 +2,7 @@
 
 ## Repository Overview
 
-This is the **Open Filament Database** by SimplyPrint - an open-source, community-driven database of 3D printing filament information. The repository contains structured filament data, validation tools, and a web-based editing interface.
+This is the **Open Filament Database** - an open-source, community-driven database of 3D printing filament information. The repository contains structured filament data, validation tools, and a web-based editing interface.
 
 **Key Information:**
 - **Project Type**: Data repository with Python validation tools and SvelteKit WebUI

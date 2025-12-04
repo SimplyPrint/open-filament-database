@@ -337,6 +337,7 @@ class FilamentSize(IToFromJSONData):
     diameter: float  # Required
     empty_spool_weight: Optional[float]
     spool_core_diameter: Optional[float]
+    gtin: Optional[str]
     ean: Optional[str]
     article_number: Optional[str]
     barcode_identifier: Optional[str]
@@ -350,6 +351,7 @@ class FilamentSize(IToFromJSONData):
                  diameter: float,
                  empty_spool_weight: Optional[float] = None,
                  spool_core_diameter: Optional[float] = None,
+                 gtin: Optional[str] = None,
                  ean: Optional[str] = None,
                  article_number: Optional[str] = None,
                  barcode_identifier: Optional[str] = None,
@@ -364,6 +366,31 @@ class FilamentSize(IToFromJSONData):
         self.diameter = diameter
         self.empty_spool_weight = empty_spool_weight
         self.spool_core_diameter = spool_core_diameter
+        # Normalize and validate GTIN/EAN per rules
+        gtin = gtin.strip() if isinstance(gtin, str) else gtin
+        ean = ean.strip() if isinstance(ean, str) else ean
+
+        gtin_pattern = re.compile(r"^[0-9]{12,13}$")
+        ean_pattern = re.compile(r"^[0-9]{13}$")
+
+        # Input normalization
+        if (not gtin) and ean and ean_pattern.fullmatch(ean):
+            gtin = ean
+        if gtin and (not ean) and len(gtin) == 13:
+            ean = gtin
+
+        # Validation rules
+        if gtin is not None:
+            if not gtin_pattern.fullmatch(gtin):
+                raise Exception("Invalid gtin: must be 12 or 13 digits only")
+        if ean is not None:
+            if not ean_pattern.fullmatch(ean):
+                raise Exception("Invalid ean: must be exactly 13 digits")
+        if gtin and ean:
+            if len(gtin) == 13 and len(ean) == 13 and gtin != ean:
+                raise Exception("Mismatch between gtin and ean (both 13 digits); they must match")
+
+        self.gtin = gtin
         self.ean = ean
         self.article_number = article_number
         self.barcode_identifier = barcode_identifier
@@ -373,12 +400,18 @@ class FilamentSize(IToFromJSONData):
         self.purchase_links = purchase_links
 
     def to_dict(self):
+        # Output normalization: always include gtin; also return ean for legacy clients
+        ean_out = self.ean
+        if (ean_out is None or ean_out == "") and isinstance(self.gtin, str) and len(self.gtin) == 13:
+            ean_out = self.gtin
+
         return shallow_remove_empty({
             "filament_weight": self.filament_weight,
             "diameter": self.diameter,
             "empty_spool_weight": self.empty_spool_weight,
             "spool_core_diameter": self.spool_core_diameter,
-            "ean": self.ean,
+            "gtin": self.gtin,
+            "ean": ean_out,
             "article_number": self.article_number,
             "barcode_identifier": self.barcode_identifier,
             "nfc_identifier": self.nfc_identifier,
@@ -398,6 +431,7 @@ class FilamentSize(IToFromJSONData):
             diameter=json_data["diameter"],
             empty_spool_weight=json_data.get("empty_spool_weight"),
             spool_core_diameter=json_data.get("spool_core_diameter"),
+            gtin=json_data.get("gtin"),
             ean=json_data.get("ean"),
             article_number=json_data.get("article_number"),
             barcode_identifier=json_data.get("barcode_identifier"),
