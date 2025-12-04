@@ -84,25 +84,12 @@ class Store:
     id: str
     name: str
     slug: str
-    domain: Optional[str] = None
-    country: Optional[str] = None
+    storefront_url: Optional[str] = None
+    ships_from: Optional[str] = None
+    ships_to: Optional[str] = None
     logo: Optional[str] = None
     # Path within the stores directory to the store folder (for asset resolution)
     source_path: Optional[str] = None
-
-
-@dataclass
-class Offer:
-    """Price listing at a store."""
-    id: str
-    store_id: str
-    url: str
-    spool_id: Optional[str] = None
-    price_amount: Optional[str] = None
-    price_currency: Optional[str] = None
-    in_stock: Optional[bool] = None
-    last_seen_at: Optional[str] = None
-    shipping_regions: Optional[list[str]] = None
 
 
 @dataclass

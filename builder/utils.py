@@ -48,11 +48,6 @@ def generate_store_id(name: str) -> str:
     return generate_uuid5(f"Store::{name.lower().strip()}")
 
 
-def generate_offer_id(key: str) -> str:
-    """Generate a stable ID for an offer."""
-    return generate_uuid5(f"Offer::{key}")
-
-
 def generate_document_id(key: str) -> str:
     """Generate a stable ID for a document."""
     return generate_uuid5(f"Document::{key}")

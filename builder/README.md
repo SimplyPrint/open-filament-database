@@ -75,11 +75,12 @@ Additional endpoints implemented for navigation and discovery:
 
 ```
 spools/
-└── index.json               # All spools (joined with variant/product/brand/material)
+├── index.json               # Sitemap of all spools (references only)
+└── {id}.json                # Individual spool with full data + offers
 materials/
-└── {code}-spools.json       # All spools for a material (e.g., pla-spools.json)
+└── {code}-spools.json       # Sitemap of spools for a material (references only)
 brands/
-└── {brand}-spools.json      # All spools for a brand
+└── {brand}-spools.json      # Sitemap of spools for a brand (references only)
 catalog/
 ├── index.json               # Catalog entry point (lists brands)
 └── {brand}/
@@ -88,7 +89,7 @@ catalog/
         ├── index.json       # Material → branded products (aka product lines) under this brand/material
         └── {product}/
             ├── index.json   # Product → color variants list
-            └── {variant}.json  # Variant page with spools; each spool may embed `offers` with store links
+            └── {variant}.json  # Variant page with spool references (paths to /spools/{id}.json)
 ```
 
 Catalog hierarchy mirrors SimplyPrint schema:
@@ -96,7 +97,55 @@ Catalog hierarchy mirrors SimplyPrint schema:
   - Material types (e.g., PLA)
     - Branded materials under the type (products like "PLA Basic", "PLA Matte")
       - Colors (variants)
-        - Spools (sizes/SKUs) including embedded store offers
+        - Spool references (with paths to `/spools/{id}.json` for full data including offers)
+
+### API Reference Format
+
+The API uses a normalized reference format to reduce redundancy and file sizes. Instead of embedding full objects, related entities are referenced using ID + name + slug fields:
+
+| Entity | Reference Fields |
+|--------|-----------------|
+| Brand | `brand_id`, `brand_name`, `brand_slug` |
+| Material | `material_id`, `material_code`, `material_name` |
+| Product | `product_id`, `product_name`, `product_slug` |
+| Variant | `variant_id`, `variant_name`, `variant_slug` |
+| Store | `store_id`, `store_name`, `store_slug`, `storefront_url` |
+| Spool | `spool_id`, `spool_weight_g`, `spool_diameter_mm` |
+
+**Sitemap-style Index Files:**
+
+All `index.json` files serve as sitemaps - they contain lightweight references with `path` fields pointing to individual data files. This keeps index files small and allows clients to fetch only the data they need.
+
+**Example - Spool reference in product variants:**
+```json
+{
+  "spool_id": "spool-abc123",
+  "spool_weight_g": 1000,
+  "spool_diameter_mm": 1.75,
+  "sku": "PLA-BLK-1KG",
+  "gtin": "1234567890123",
+  "path": "../../spools/spool-abc123.json"
+}
+```
+
+**Example - Product in materials endpoint:**
+```json
+{
+  "id": "product-123",
+  "name": "PLA Basic",
+  "slug": "pla-basic",
+  "brand_id": "brand-456",
+  "brand_name": "Prusament",
+  "brand_slug": "prusament"
+}
+```
+
+Full entity data is available at dedicated endpoints:
+- `/brands/{slug}.json` - Full brand details
+- `/materials/{code}.json` - Full material details
+- `/products/{id}.json` - Full product details with variant references
+- `/stores/{slug}.json` - Full store details
+- `/spools/{id}.json` - Full spool details with offers (the canonical source for spool data)
 
 ## Command Line Options
 

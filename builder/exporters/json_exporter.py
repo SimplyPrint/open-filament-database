@@ -34,7 +34,6 @@ def database_to_dict(db: Database, version: str, generated_at: str) -> dict:
         "variants": [entity_to_dict(v) for v in db.variants],
         "spools": [entity_to_dict(s) for s in db.spools],
         "stores": [entity_to_dict(s) for s in db.stores],
-        "offers": [entity_to_dict(o) for o in db.offers],
         "documents": [entity_to_dict(d) for d in db.documents],
         "tags": [entity_to_dict(t) for t in db.tags],
     }
@@ -102,11 +101,7 @@ def export_ndjson(db: Database, output_dir: str, version: str, generated_at: str
         for store in db.stores:
             record = {"_type": "store", **entity_to_dict(store)}
             f.write(json.dumps(record, ensure_ascii=False) + '\n')
-        
-        for offer in db.offers:
-            record = {"_type": "offer", **entity_to_dict(offer)}
-            f.write(json.dumps(record, ensure_ascii=False) + '\n')
-        
+
         for document in db.documents:
             record = {"_type": "document", **entity_to_dict(document)}
             f.write(json.dumps(record, ensure_ascii=False) + '\n')
@@ -141,11 +136,6 @@ def export_per_brand_json(db: Database, output_dir: str, version: str, generated
     for doc in db.documents:
         documents_by_product.setdefault(doc.product_id, []).append(doc)
     
-    offers_by_spool = {}
-    for offer in db.offers:
-        if offer.spool_id:
-            offers_by_spool.setdefault(offer.spool_id, []).append(offer)
-    
     # Create index for brand listing
     brand_index = []
     
@@ -170,10 +160,6 @@ def export_per_brand_json(db: Database, output_dir: str, version: str, generated
         # Collect relevant offers
         brand_offers = []
         relevant_store_ids = set()
-        for spool in brand_spools:
-            for offer in offers_by_spool.get(spool.id, []):
-                brand_offers.append(offer)
-                relevant_store_ids.add(offer.store_id)
         
         # Get relevant stores
         brand_stores = [s for s in db.stores if s.id in relevant_store_ids]

@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .models import (
-    Brand, MaterialFamily, Product, Variant, Spool, Store, Offer, Document, Tag, Database
+    Brand, MaterialFamily, Product, Variant, Spool, Store, Document, Tag, Database
 )
 from .utils import (
     generate_brand_id, generate_material_family_id, generate_product_id,
-    generate_variant_id, generate_spool_id, generate_store_id, generate_offer_id,
+    generate_variant_id, generate_spool_id, generate_store_id,
     generate_document_id, generate_tag_id, normalize_color_hex, slugify,
     get_current_timestamp, parse_price
 )
@@ -95,7 +95,6 @@ class DataCrawler:
         print(f"  Variants: {len(self.db.variants)}")
         print(f"  Spools: {len(self.db.spools)}")
         print(f"  Stores: {len(self.db.stores)}")
-        print(f"  Offers: {len(self.db.offers)}")
         print(f"  Documents: {len(self.db.documents)}")
         
         return self.db
@@ -498,12 +497,7 @@ class DataCrawler:
             return
         
         store_name = store_data.get("name", store_dir.name)
-        store_id = self._get_or_create_store(store_name, store_data, source_path=str(store_dir.relative_to(self.stores_dir)))
-        
-        # Process products/offers in store data
-        products = store_data.get("products", [])
-        for product_entry in products:
-            self._process_store_product(product_entry, store_id)
+        self._get_or_create_store(store_name, store_data, source_path=str(store_dir.relative_to(self.stores_dir)))
     
     def _get_or_create_store(self, name: str, data: dict, source_path: Optional[str] = None) -> str:
         """Get existing store ID or create new store."""
@@ -516,8 +510,9 @@ class DataCrawler:
             id=store_id,
             name=name,
             slug=slugify(name),
-            domain=data.get("domain") or data.get("website"),
-            country=data.get("country"),
+            storefront_url=data.get("storefront_url"),
+            ships_from=data.get("ships_from"),
+            ships_to=data.get("ships_to"),
             logo=data.get("logo"),
             source_path=source_path
         )
@@ -526,54 +521,6 @@ class DataCrawler:
         self._store_cache[name] = store_id
         
         return store_id
-    
-    def _process_store_product(self, product_entry: dict, store_id: str):
-        """Process a product entry from store.json to create offers."""
-        # Try to match with existing spool by SKU or other identifier
-        sku = product_entry.get("sku")
-        url = product_entry.get("url")
-        
-        if not url:
-            return
-        
-        # Parse price
-        price_amount = None
-        price_currency = None
-        price_data = product_entry.get("price")
-        if price_data:
-            if isinstance(price_data, dict):
-                price_amount = price_data.get("amount")
-                price_currency = price_data.get("currency")
-            elif isinstance(price_data, str):
-                price_amount, price_currency = parse_price(price_data)
-            elif isinstance(price_data, (int, float)):
-                price_amount = str(price_data)
-        
-        # Try to find matching spool
-        spool_id = None
-        if sku:
-            for spool in self.db.spools:
-                if spool.sku == sku:
-                    spool_id = spool.id
-                    break
-        
-        # Create offer even without matched spool (for reference)
-        offer_id = generate_offer_id(f"{store_id}:{url}")
-        
-        offer = Offer(
-            id=offer_id,
-            store_id=store_id,
-            spool_id=spool_id,
-            url=url,
-            price_amount=price_amount,
-            price_currency=price_currency,
-            in_stock=product_entry.get("in_stock"),
-            last_seen_at=self.timestamp,
-            shipping_regions=product_entry.get("shipping_regions")
-        )
-        
-        self.db.offers.append(offer)
-
 
 def crawl_data(data_dir: str, stores_dir: str) -> Database:
     """Main entry point to crawl data and return populated database."""

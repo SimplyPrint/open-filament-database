@@ -136,42 +136,18 @@ def export_csv(db: Database, output_dir: str, version: str, generated_at: str):
     stores_file = output_path / "stores.csv"
     with open(stores_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['id', 'name', 'slug', 'domain', 'country', 'logo'])
+        writer.writerow(['id', 'name', 'slug', 'storefront_url', 'ships_from', 'ships_to', 'logo'])
         for store in db.stores:
             writer.writerow([
                 store.id,
                 store.name,
                 store.slug,
-                store.domain or "",
-                store.country or "",
+                store.storefront_url or "",
+                store.ships_from or "",
+                store.ships_to or "",
                 getattr(store, 'logo', '') or ""
             ])
     print(f"  Written: {stores_file}")
-    
-    # Export offers
-    offers_file = output_path / "offers.csv"
-    with open(offers_file, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            'id', 'store_id', 'spool_id', 'url', 'price_amount', 
-            'price_currency', 'in_stock', 'last_seen_at', 'shipping_regions'
-        ])
-        for offer in db.offers:
-            in_stock_str = ""
-            if offer.in_stock is not None:
-                in_stock_str = "1" if offer.in_stock else "0"
-            writer.writerow([
-                offer.id,
-                offer.store_id,
-                offer.spool_id or "",
-                offer.url,
-                offer.price_amount or "",
-                offer.price_currency or "",
-                in_stock_str,
-                offer.last_seen_at or "",
-                list_to_str(offer.shipping_regions)
-            ])
-    print(f"  Written: {offers_file}")
     
     # Export documents
     documents_file = output_path / "documents.csv"

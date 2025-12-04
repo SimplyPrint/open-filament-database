@@ -96,8 +96,9 @@ CREATE TABLE IF NOT EXISTS store (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     slug TEXT NOT NULL,
-    domain TEXT,
-    country TEXT,
+    storefront_url TEXT,
+    ships_from TEXT,
+    ships_to TEXT,
     logo TEXT
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_store_slug ON store(slug);
@@ -188,7 +189,7 @@ SELECT
     p.name AS product_name,
     b.name AS brand_name,
     st.name AS store_name,
-    st.domain AS store_domain,
+    st.storefront_url AS storefront_url,
     o.url AS offer_url,
     o.price_amount,
     o.price_currency,
@@ -324,33 +325,16 @@ def export_sqlite(db: Database, output_dir: str, version: str, generated_at: str
     # Insert stores
     for store in db.stores:
         cursor.execute("""
-            INSERT INTO store (id, name, slug, domain, country, logo)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO store (id, name, slug, storefront_url, ships_from, ships_to, logo)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             store.id,
             store.name,
             store.slug,
-            store.domain,
-            store.country,
+            store.storefront_url,
+            json_or_none(store.ships_from),
+            json_or_none(store.ships_to),
             getattr(store, 'logo', None)
-        ))
-    
-    # Insert offers
-    for offer in db.offers:
-        cursor.execute("""
-            INSERT INTO offer (id, store_id, spool_id, url, price_amount, price_currency, 
-                              in_stock, last_seen_at, shipping_regions)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            offer.id,
-            offer.store_id,
-            offer.spool_id,
-            offer.url,
-            offer.price_amount,
-            offer.price_currency,
-            bool_to_int(offer.in_stock),
-            offer.last_seen_at,
-            json_or_none(offer.shipping_regions)
         ))
     
     # Insert documents
