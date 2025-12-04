@@ -1,5 +1,5 @@
-# Open Filament Database by SimplyPrint
-The Open Filament Database, facilitated by SimplyPrint.
+# Open Filament Database
+The Open Filament Database, hosted by the new "Open Filament Collective" group, currently facilitated by SimplyPrint.
 
 ## ✅ Contributing: how to add to the database
 The beautiful thing about the database is that it's open source so anyone can contribute, whether you're a hobbyist, print farm or brand.
