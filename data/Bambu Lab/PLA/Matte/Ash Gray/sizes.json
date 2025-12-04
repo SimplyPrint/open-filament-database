@@ -12,7 +12,7 @@
       {
         "store_id": "BBLStore",
         "url": "https://us.store.bambulab.com/collections/pla/products/pla-matte?variant=40489681813640",
-        "spool_refill": true,
+        "spool_refill": false,
         "affiliate": false
       }
     ]
