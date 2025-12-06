@@ -28,9 +28,9 @@ def generate_material_family_id(code: str) -> str:
     return generate_uuid5(f"MaterialFamily::{code.upper().strip()}")
 
 
-def generate_product_id(path: str) -> str:
-    """Generate a stable ID for a product based on its path."""
-    return generate_uuid5(f"Product::{path}")
+def generate_filament_id(path: str) -> str:
+    """Generate a stable ID for a filament based on its path."""
+    return generate_uuid5(f"Filament::{path}")
 
 
 def generate_variant_id(path: str) -> str:
@@ -38,9 +38,9 @@ def generate_variant_id(path: str) -> str:
     return generate_uuid5(f"Variant::{path}")
 
 
-def generate_spool_id(key: str) -> str:
-    """Generate a stable ID for a spool."""
-    return generate_uuid5(f"Spool::{key}")
+def generate_size_id(key: str) -> str:
+    """Generate a stable ID for a size."""
+    return generate_uuid5(f"Size::{key}")
 
 
 def generate_store_id(name: str) -> str:
@@ -51,6 +51,11 @@ def generate_store_id(name: str) -> str:
 def generate_document_id(key: str) -> str:
     """Generate a stable ID for a document."""
     return generate_uuid5(f"Document::{key}")
+
+
+def generate_purchase_link_id(key: str) -> str:
+    """Generate a stable ID for a purchase link."""
+    return generate_uuid5(f"PurchaseLink::{key}")
 
 
 def generate_tag_id(name: str) -> str:

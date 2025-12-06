@@ -9,13 +9,13 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .models import (
-    Brand, MaterialFamily, Product, Variant, Spool, Store, Document, Tag, Database
+    Brand, MaterialFamily, Filament, Variant, Size, Store, Document, PurchaseLink, Tag, Database
 )
 from .utils import (
-    generate_brand_id, generate_material_family_id, generate_product_id,
-    generate_variant_id, generate_spool_id, generate_store_id,
-    generate_document_id, generate_tag_id, normalize_color_hex, slugify,
-    get_current_timestamp, parse_price
+    generate_brand_id, generate_material_family_id, generate_filament_id,
+    generate_variant_id, generate_size_id, generate_store_id,
+    generate_document_id, generate_purchase_link_id, generate_tag_id,
+    normalize_color_hex, slugify, get_current_timestamp, parse_price
 )
 
 
@@ -73,7 +73,7 @@ class DataCrawler:
         # Caches for deduplication
         self._brand_cache: dict[str, str] = {}  # name -> id
         self._material_cache: dict[str, str] = {}  # code -> id
-        self._product_cache: dict[str, str] = {}  # path -> id
+        self._filament_cache: dict[str, str] = {}  # path -> id
         self._variant_cache: dict[str, str] = {}  # path -> id
         self._store_cache: dict[str, str] = {}  # name -> id
         
@@ -91,10 +91,11 @@ class DataCrawler:
         print(f"\nCrawl complete!")
         print(f"  Brands: {len(self.db.brands)}")
         print(f"  Material Families: {len(self.db.material_families)}")
-        print(f"  Products: {len(self.db.products)}")
+        print(f"  Filaments: {len(self.db.filaments)}")
         print(f"  Variants: {len(self.db.variants)}")
-        print(f"  Spools: {len(self.db.spools)}")
+        print(f"  Sizes: {len(self.db.sizes)}")
         print(f"  Stores: {len(self.db.stores)}")
+        print(f"  Purchase Links: {len(self.db.purchase_links)}")
         print(f"  Documents: {len(self.db.documents)}")
         
         return self.db
@@ -136,48 +137,48 @@ class DataCrawler:
         
         # Get or create material family
         material_family_id = self._get_or_create_material_family(material_name)
-        
-        # Each subdirectory is a product line
-        for product_dir in sorted(material_dir.iterdir()):
-            if not product_dir.is_dir():
+
+        # Each subdirectory is a filament line
+        for filament_dir in sorted(material_dir.iterdir()):
+            if not filament_dir.is_dir():
                 continue
-            if product_dir.name.startswith('.'):
+            if filament_dir.name.startswith('.'):
                 continue
-            
-            self._process_product_directory(product_dir, brand_id, material_family_id)
+
+            self._process_filament_directory(filament_dir, brand_id, material_family_id)
     
-    def _process_product_directory(self, product_dir: Path, brand_id: str, material_family_id: str):
-        """Process a product directory."""
-        product_name = product_dir.name
-        
-        # Check for filament.json at product level
-        filament_json = product_dir / "filament.json"
-        product_meta = {}
+    def _process_filament_directory(self, filament_dir: Path, brand_id: str, material_family_id: str):
+        """Process a filament directory."""
+        filament_name = filament_dir.name
+
+        # Check for filament.json at filament level
+        filament_json = filament_dir / "filament.json"
+        filament_meta = {}
         if filament_json.exists():
             try:
                 with open(filament_json, 'r', encoding='utf-8') as f:
-                    product_meta = json.load(f)
+                    filament_meta = json.load(f)
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Failed to parse {filament_json}: {e}")
-        
-        # Create product
-        product_id = self._create_product(
-            product_dir, product_name, brand_id, material_family_id, product_meta
+
+        # Create filament
+        filament_id = self._create_filament(
+            filament_dir, filament_name, brand_id, material_family_id, filament_meta
         )
-        
+
         # Each subdirectory is a color variant
-        for variant_dir in sorted(product_dir.iterdir()):
+        for variant_dir in sorted(filament_dir.iterdir()):
             if not variant_dir.is_dir():
                 continue
             if variant_dir.name.startswith('.'):
                 continue
-            
-            self._process_variant_directory(variant_dir, product_id)
+
+            self._process_variant_directory(variant_dir, filament_id)
     
-    def _process_variant_directory(self, variant_dir: Path, product_id: str):
+    def _process_variant_directory(self, variant_dir: Path, filament_id: str):
         """Process a variant (color) directory."""
         variant_name = variant_dir.name
-        
+
         # Check for filament.json at variant level
         filament_json = variant_dir / "filament.json"
         variant_meta = {}
@@ -187,29 +188,29 @@ class DataCrawler:
                     variant_meta = json.load(f)
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Failed to parse {filament_json}: {e}")
-        
+
         # Create variant
-        variant_id = self._create_variant(variant_dir, variant_name, product_id, variant_meta)
-        
+        variant_id = self._create_variant(variant_dir, variant_name, filament_id, variant_meta)
+
         # Check for sizes.json
         sizes_json = variant_dir / "sizes.json"
         if sizes_json.exists():
             self._process_sizes_file(sizes_json, variant_id)
     
     def _process_sizes_file(self, sizes_json: Path, variant_id: str):
-        """Process sizes.json file to create spools."""
+        """Process sizes.json file to create sizes."""
         try:
             with open(sizes_json, 'r', encoding='utf-8') as f:
                 sizes_data = json.load(f)
         except (json.JSONDecodeError, IOError) as e:
             print(f"Warning: Failed to parse {sizes_json}: {e}")
             return
-        
+
         if not isinstance(sizes_data, list):
             sizes_data = [sizes_data]
-        
+
         for idx, size_entry in enumerate(sizes_data):
-            self._create_spool_from_size(size_entry, variant_id, sizes_json.parent, idx)
+            self._create_size_from_entry(size_entry, variant_id, sizes_json.parent, idx)
     
     def _get_or_create_brand(self, name: str, brand_dir: Path) -> str:
         """Get existing brand ID or create new brand."""
@@ -280,39 +281,39 @@ class DataCrawler:
         
         return material_id
     
-    def _create_product(
-        self, product_dir: Path, name: str, brand_id: str, 
+    def _create_filament(
+        self, filament_dir: Path, name: str, brand_id: str,
         material_family_id: str, meta: dict
     ) -> str:
-        """Create a product entity."""
+        """Create a filament entity."""
         # Use relative path for stable ID generation
-        rel_path = str(product_dir.relative_to(self.data_dir))
-        
-        if rel_path in self._product_cache:
-            return self._product_cache[rel_path]
-        
-        product_id = generate_product_id(rel_path)
-        
+        rel_path = str(filament_dir.relative_to(self.data_dir))
+
+        if rel_path in self._filament_cache:
+            return self._filament_cache[rel_path]
+
+        filament_id = generate_filament_id(rel_path)
+
         # Extract diameters from meta or use defaults
         diameters = meta.get("diameters", [1.75])
         if isinstance(diameters, (int, float)):
             diameters = [diameters]
-        
+
         # Extract specs
         specs = {}
         for key in ["nozzle_temp", "bed_temp", "density", "printing_speed", "properties"]:
             if key in meta:
                 specs[key] = meta[key]
-        
+
         # Look for images
         images = []
         for ext in ['.jpg', '.jpeg', '.png', '.webp']:
-            for img_file in product_dir.glob(f'*{ext}'):
+            for img_file in filament_dir.glob(f'*{ext}'):
                 if not img_file.name.startswith('.'):
                     images.append(img_file.name)
-        
-        product = Product(
-            id=product_id,
+
+        filament = Filament(
+            id=filament_id,
             brand_id=brand_id,
             material_family_id=material_family_id,
             name=name,
@@ -325,31 +326,31 @@ class DataCrawler:
             created_at=self.timestamp,
             updated_at=self.timestamp
         )
-        
-        self.db.products.append(product)
-        self._product_cache[rel_path] = product_id
-        
+
+        self.db.filaments.append(filament)
+        self._filament_cache[rel_path] = filament_id
+
         # Handle documents (TDS, SDS, etc.)
-        self._extract_documents(product_dir, product_id, meta)
-        
-        return product_id
+        self._extract_documents(filament_dir, filament_id, meta)
+
+        return filament_id
     
     def _create_variant(
-        self, variant_dir: Path, color_name: str, product_id: str, meta: dict
+        self, variant_dir: Path, color_name: str, filament_id: str, meta: dict
     ) -> str:
         """Create a variant entity."""
         rel_path = str(variant_dir.relative_to(self.data_dir))
-        
+
         if rel_path in self._variant_cache:
             return self._variant_cache[rel_path]
-        
+
         variant_id = generate_variant_id(rel_path)
-        
+
         # Extract color information
         color_value = meta.get("color_hex") or meta.get("color")
         if color_value:
             color_value = normalize_color_hex(color_value)
-        
+
         finish = meta.get("finish")
         colorants = meta.get("colorants")
         # Determine a slug for the variant (color)
@@ -359,17 +360,17 @@ class DataCrawler:
             # Prefer explicit color_name from meta if provided
             name_for_slug = meta.get("color_name") or color_name or variant_dir.name
             variant_slug = slugify(str(name_for_slug))
-        
+
         # Look for images
         images = []
         for ext in ['.jpg', '.jpeg', '.png', '.webp']:
             for img_file in variant_dir.glob(f'*{ext}'):
                 if not img_file.name.startswith('.'):
                     images.append(img_file.name)
-        
+
         variant = Variant(
             id=variant_id,
-            product_id=product_id,
+            filament_id=filament_id,
             slug=variant_slug,
             color_name=color_name,
             finish=finish,
@@ -378,18 +379,18 @@ class DataCrawler:
             images=images if images else None,
             source_path=rel_path
         )
-        
+
         self.db.variants.append(variant)
         self._variant_cache[rel_path] = variant_id
-        
+
         return variant_id
     
-    def _create_spool_from_size(self, size_entry: dict, variant_id: str, variant_dir: Path, index: int = 0):
-        """Create a spool from a sizes.json entry."""
+    def _create_size_from_entry(self, size_entry: dict, variant_id: str, variant_dir: Path, index: int = 0):
+        """Create a size from a sizes.json entry."""
         # Extract weight - try multiple field names
         weight_g = (
-            size_entry.get("weight_g") or 
-            size_entry.get("weight") or 
+            size_entry.get("weight_g") or
+            size_entry.get("weight") or
             size_entry.get("filament_weight") or
             size_entry.get("net_weight") or
             size_entry.get("spool_weight")
@@ -401,26 +402,26 @@ class DataCrawler:
             if match:
                 value, unit = match.groups()
                 weight_g = int(float(value) * 1000 if unit == 'kg' else float(value))
-        
+
         if not weight_g:
             print(f"Warning: No weight found in size entry: {size_entry}")
             return
-        
+
         # Get diameter
         diameter = size_entry.get("diameter_mm") or size_entry.get("diameter", 1.75)
         if isinstance(diameter, str):
             diameter = float(diameter.replace("mm", "").strip())
-        
+
         # Generate stable ID - include SKU or index for uniqueness
         sku = size_entry.get("sku") or ""
-        spool_key = f"{variant_id}:{weight_g}:{diameter}:{sku}:{index}"
-        spool_id = generate_spool_id(spool_key)
-        
+        size_key = f"{variant_id}:{weight_g}:{diameter}:{sku}:{index}"
+        size_id = generate_size_id(size_key)
+
         # Extract other fields
         sku = size_entry.get("sku")
         gtin = size_entry.get("gtin") or size_entry.get("ean") or size_entry.get("upc")
         length_m = size_entry.get("length_m") or size_entry.get("length")
-        
+
         # Parse MSRP
         msrp_amount = None
         msrp_currency = None
@@ -437,9 +438,9 @@ class DataCrawler:
             price_str = size_entry["price"]
             if isinstance(price_str, str):
                 msrp_amount, msrp_currency = parse_price(price_str)
-        
-        spool = Spool(
-            id=spool_id,
+
+        size = Size(
+            id=size_id,
             variant_id=variant_id,
             sku=sku,
             gtin=gtin,
@@ -449,20 +450,59 @@ class DataCrawler:
             msrp_amount=msrp_amount,
             msrp_currency=msrp_currency
         )
-        
-        self.db.spools.append(spool)
-    
-    def _extract_documents(self, product_dir: Path, product_id: str, meta: dict):
-        """Extract document references from product metadata."""
+
+        self.db.sizes.append(size)
+
+        # Process purchase_links if present
+        purchase_links = size_entry.get("purchase_links", [])
+        for pl_idx, pl_entry in enumerate(purchase_links):
+            self._create_purchase_link(pl_entry, size_id, pl_idx)
+
+    def _create_purchase_link(self, pl_entry: dict, size_id: str, index: int = 0):
+        """Create a purchase link entity from a purchase_links entry."""
+        store_id = pl_entry.get("store_id")
+        url = pl_entry.get("url")
+
+        if not store_id or not url:
+            print(f"Warning: Missing store_id or url in purchase_link: {pl_entry}")
+            return
+
+        # Generate stable ID
+        pl_key = f"{size_id}:{store_id}:{index}"
+        pl_id = generate_purchase_link_id(pl_key)
+
+        # Handle ships_from and ships_to - can be string or array
+        ships_from = pl_entry.get("ships_from")
+        if isinstance(ships_from, str):
+            ships_from = [ships_from]
+
+        ships_to = pl_entry.get("ships_to")
+        if isinstance(ships_to, str):
+            ships_to = [ships_to]
+
+        purchase_link = PurchaseLink(
+            id=pl_id,
+            size_id=size_id,
+            store_id=store_id,
+            url=url,
+            spool_refill=pl_entry.get("spool_refill", False),
+            ships_from=ships_from,
+            ships_to=ships_to
+        )
+
+        self.db.purchase_links.append(purchase_link)
+
+    def _extract_documents(self, filament_dir: Path, filament_id: str, meta: dict):
+        """Extract document references from filament metadata."""
         doc_types = ["tds", "sds", "profile", "datasheet"]
-        
+
         for doc_type in doc_types:
             url = meta.get(doc_type) or meta.get(f"{doc_type}_url")
             if url:
-                doc_id = generate_document_id(f"{product_id}:{doc_type}")
+                doc_id = generate_document_id(f"{filament_id}:{doc_type}")
                 doc = Document(
                     id=doc_id,
-                    product_id=product_id,
+                    filament_id=filament_id,
                     type=doc_type.upper(),
                     url=url,
                     language=meta.get(f"{doc_type}_language", "en")

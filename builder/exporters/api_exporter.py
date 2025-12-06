@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 from typing import Any
 
-from ..models import Database, Brand, Product, Variant, Spool
+from ..models import Database, Brand, Filament, Variant, Size, PurchaseLink
 
 
 def entity_to_dict(entity: Any) -> dict:
@@ -51,14 +51,14 @@ def make_material_ref(material) -> dict:
     }
 
 
-def make_product_ref(product) -> dict:
-    """Create a lightweight product reference with id, name, and slug."""
-    if not product:
-        return {"product_id": None, "product_name": None, "product_slug": None}
+def make_filament_ref(filament) -> dict:
+    """Create a lightweight filament reference with id, name, and slug."""
+    if not filament:
+        return {"filament_id": None, "filament_name": None, "filament_slug": None}
     return {
-        "product_id": product.id,
-        "product_name": product.name,
-        "product_slug": product.slug,
+        "filament_id": filament.id,
+        "filament_name": filament.name,
+        "filament_slug": filament.slug,
     }
 
 
@@ -85,14 +85,14 @@ def make_store_ref(store) -> dict:
     }
 
 
-def make_spool_ref(spool) -> dict:
-    """Create a lightweight spool reference with id and key identifiers."""
-    if not spool:
-        return {"spool_id": None, "spool_weight_g": None, "spool_diameter_mm": None}
+def make_size_ref(size) -> dict:
+    """Create a lightweight size reference with id and key identifiers."""
+    if not size:
+        return {"size_id": None, "size_weight_g": None, "size_diameter_mm": None}
     return {
-        "spool_id": spool.id,
-        "spool_weight_g": spool.weight_g,
-        "spool_diameter_mm": spool.diameter_mm,
+        "size_id": size.id,
+        "size_weight_g": size.weight_g,
+        "size_diameter_mm": size.diameter_mm,
     }
 
 
@@ -118,28 +118,34 @@ def export_api(
     stores_assets.mkdir(parents=True, exist_ok=True)
     
     # Build lookup maps
-    products_by_brand = {}
-    for product in db.products:
-        products_by_brand.setdefault(product.brand_id, []).append(product)
-    
-    variants_by_product = {}
+    filaments_by_brand = {}
+    for filament in db.filaments:
+        filaments_by_brand.setdefault(filament.brand_id, []).append(filament)
+
+    variants_by_filament = {}
     for variant in db.variants:
-        variants_by_product.setdefault(variant.product_id, []).append(variant)
-    
-    spools_by_variant = {}
-    for spool in db.spools:
-        spools_by_variant.setdefault(spool.variant_id, []).append(spool)
-    
-    documents_by_product = {}
+        variants_by_filament.setdefault(variant.filament_id, []).append(variant)
+
+    sizes_by_variant = {}
+    for size in db.sizes:
+        sizes_by_variant.setdefault(size.variant_id, []).append(size)
+
+    documents_by_filament = {}
     for doc in db.documents:
-        documents_by_product.setdefault(doc.product_id, []).append(doc)
-    
+        documents_by_filament.setdefault(doc.filament_id, []).append(doc)
+
+    purchase_links_by_size = {}
+    for pl in db.purchase_links:
+        purchase_links_by_size.setdefault(pl.size_id, []).append(pl)
+
     materials_map = {m.id: m for m in db.material_families}
     brands_map = {b.id: b for b in db.brands}
-    products_map = {p.id: p for p in db.products}
+    filaments_map = {f.id: f for f in db.filaments}
     variants_map = {v.id: v for v in db.variants}
-    spools_map = {s.id: s for s in db.spools}
+    sizes_map = {s.id: s for s in db.sizes}
     stores_map = {s.id: s for s in db.stores}
+    # Also map stores by slug for purchase_link lookups (store_id may be a slug)
+    stores_by_slug = {s.slug: s for s in db.stores}
     
     # Helper: URL mode decision
     def is_localhost_url(url: str | None) -> bool:
@@ -225,65 +231,66 @@ def export_api(
         "endpoints": {
             "brands": "brands/index.json",
             "materials": "materials/index.json",
-            "products": "products/index.json",
+            "filaments": "filaments/index.json",
             "stores": "stores/index.json",
             "search": "search/autocomplete.json",
             "catalog": "catalog/index.json",
-            "spools": "spools/index.json"
+            "sizes": "sizes/index.json"
         },
         "stats": {
             "brands": len(db.brands),
             "material_families": len(db.material_families),
-            "products": len(db.products),
+            "filaments": len(db.filaments),
             "variants": len(db.variants),
-            "spools": len(db.spools),
-            "stores": len(db.stores)
+            "sizes": len(db.sizes),
+            "stores": len(db.stores),
+            "purchase_links": len(db.purchase_links)
         }
     }
     write_json(api_path / "index.json", root_index)
     print(f"  Written: {api_path / 'index.json'}")
-    
+
     # === Brands ===
     brands_path = api_path / "brands"
     brand_index_items = []
-    
+
     for brand in db.brands:
-        brand_products = products_by_brand.get(brand.id, [])
-        
-        # Count variants and spools for this brand
+        brand_filaments = filaments_by_brand.get(brand.id, [])
+
+        # Count variants and sizes for this brand
         variant_count = 0
-        spool_count = 0
-        for product in brand_products:
-            product_variants = variants_by_product.get(product.id, [])
-            variant_count += len(product_variants)
-            for variant in product_variants:
-                spool_count += len(spools_by_variant.get(variant.id, []))
-        
+        size_count = 0
+        for filament in brand_filaments:
+            filament_variants = variants_by_filament.get(filament.id, [])
+            variant_count += len(filament_variants)
+            for variant in filament_variants:
+                size_count += len(sizes_by_variant.get(variant.id, []))
+
         # Add to index
         brand_index_items.append({
             "id": brand.id,
             "slug": brand.slug,
             "name": brand.name,
-            "product_count": len(brand_products),
+            "filament_count": len(brand_filaments),
             "variant_count": variant_count,
-            "spool_count": spool_count,
+            "size_count": size_count,
             "logo_url": ensure_brand_logo_and_get_url(brand)
         })
-        
-        # Create individual brand file with products
+
+        # Create individual brand file with filaments
         # augment brand dict with logo_url
         _brand_dict = entity_to_dict(brand)
         _brand_dict["logo_url"] = ensure_brand_logo_and_get_url(brand)
         brand_data = {
             "version": version,
             "brand": _brand_dict,
-            "products": [
+            "filaments": [
                 {
-                    **entity_to_dict(p),
-                    **make_material_ref(materials_map.get(p.material_family_id)),
-                    "variant_count": len(variants_by_product.get(p.id, []))
+                    **entity_to_dict(f),
+                    **make_material_ref(materials_map.get(f.material_family_id)),
+                    "variant_count": len(variants_by_filament.get(f.id, []))
                 }
-                for p in brand_products
+                for f in brand_filaments
             ]
         }
         write_json(brands_path / f"{brand.slug}.json", brand_data)
@@ -300,31 +307,31 @@ def export_api(
     # === Materials ===
     materials_path = api_path / "materials"
     material_index_items = []
-    
-    products_by_material = {}
-    for product in db.products:
-        products_by_material.setdefault(product.material_family_id, []).append(product)
-    
+
+    filaments_by_material = {}
+    for filament in db.filaments:
+        filaments_by_material.setdefault(filament.material_family_id, []).append(filament)
+
     for material in db.material_families:
-        material_products = products_by_material.get(material.id, [])
-        
+        material_filaments = filaments_by_material.get(material.id, [])
+
         material_index_items.append({
             "id": material.id,
             "code": material.code,
             "name": material.name,
-            "product_count": len(material_products)
+            "filament_count": len(material_filaments)
         })
-        
+
         # Create individual material file
         material_data = {
             "version": version,
             "material": entity_to_dict(material),
-            "products": [
+            "filaments": [
                 {
-                    **entity_to_dict(p),
-                    **make_brand_ref(brands_map.get(p.brand_id)),
+                    **entity_to_dict(f),
+                    **make_brand_ref(brands_map.get(f.brand_id)),
                 }
-                for p in material_products
+                for f in material_filaments
             ]
         }
         write_json(materials_path / f"{material.code.lower()}.json", material_data)
@@ -338,135 +345,144 @@ def export_api(
     write_json(materials_path / "index.json", material_index)
     print(f"  Written: {len(db.material_families)} material files to {materials_path}")
 
-    # === Spools (individual files + sitemap index) ===
-    spools_path = api_path / "spools"
+    # === Sizes (individual files + sitemap index) ===
+    sizes_path = api_path / "sizes"
 
-    def make_spool_view(spool: Spool):
-        """Create full spool view with all related references."""
-        v = variants_map.get(spool.variant_id)
-        p = products_map.get(v.product_id) if v else None
-        b = brands_map.get(p.brand_id) if p else None
-        m = materials_map.get(p.material_family_id) if p else None
+    def make_size_view(size: Size):
+        """Create full size view with all related references."""
+        v = variants_map.get(size.variant_id)
+        f = filaments_map.get(v.filament_id) if v else None
+        b = brands_map.get(f.brand_id) if f else None
+        m = materials_map.get(f.material_family_id) if f else None
+        size_purchase_links = purchase_links_by_size.get(size.id, [])
         return {
-            **entity_to_dict(spool),
+            **entity_to_dict(size),
             "brand_id": b.id if b else None,
             "material_id": m.id if m else None,
+            "purchase_links": [
+                {
+                    **entity_to_dict(pl),
+                    # Try looking up store by ID first, then by slug (store_id may be a slug)
+                    **make_store_ref(stores_map.get(pl.store_id) or stores_by_slug.get(pl.store_id))
+                }
+                for pl in size_purchase_links
+            ]
         }
 
-    def make_spool_index_entry(spool: Spool) -> dict:
-        """Create a lightweight spool reference for sitemap-style index."""
-        v = variants_map.get(spool.variant_id)
-        p = products_map.get(v.product_id) if v else None
-        b = brands_map.get(p.brand_id) if p else None
-        m = materials_map.get(p.material_family_id) if p else None
+    def make_size_index_entry(size: Size) -> dict:
+        """Create a lightweight size reference for sitemap-style index."""
+        v = variants_map.get(size.variant_id)
+        f = filaments_map.get(v.filament_id) if v else None
+        b = brands_map.get(f.brand_id) if f else None
+        m = materials_map.get(f.material_family_id) if f else None
         return {
-            "id": spool.id,
+            "id": size.id,
             "variant_name": v.color_name if v else None,
-            "product_name": p.name if p else None,
+            "filament_name": f.name if f else None,
             "brand_id": b.id if b else None,
             "material_id": m.id if m else None
         }
 
-    # Write individual spool files
-    for spool in db.spools:
-        spool_data = {
+    # Write individual size files
+    for size in db.sizes:
+        size_data = {
             "version": version,
-            "spool": make_spool_view(spool)
+            "size": make_size_view(size)
         }
-        write_json(spools_path / f"{spool.id}.json", spool_data)
+        write_json(sizes_path / f"{size.id}.json", size_data)
 
-    # Spools index (sitemap style - references only)
-    write_json(spools_path / "index.json", {
+    # Sizes index (sitemap style - references only)
+    write_json(sizes_path / "index.json", {
         "version": version,
-        "count": len(db.spools),
-        "spools": [make_spool_index_entry(s) for s in db.spools]
+        "count": len(db.sizes),
+        "sizes": [make_size_index_entry(s) for s in db.sizes]
     })
-    print(f"  Written: {len(db.spools)} spool files to {spools_path}")
+    print(f"  Written: {len(db.sizes)} size files to {sizes_path}")
 
-    # Spools per material (sitemap style)
+    # Sizes per material (sitemap style)
     for material in db.material_families:
-        mat_spool_entries = []
-        for s in db.spools:
+        mat_size_entries = []
+        for s in db.sizes:
             v = variants_map.get(s.variant_id)
-            p = products_map.get(v.product_id) if v else None
-            if p and p.material_family_id == material.id:
-                mat_spool_entries.append(make_spool_index_entry(s))
-        write_json(materials_path / f"{material.code.lower()}-spools.json", {
+            f = filaments_map.get(v.filament_id) if v else None
+            if f and f.material_family_id == material.id:
+                mat_size_entries.append(make_size_index_entry(s))
+        write_json(materials_path / f"{material.code.lower()}-sizes.json", {
             "version": version,
             "material": entity_to_dict(material),
-            "count": len(mat_spool_entries),
-            "spools": mat_spool_entries
+            "count": len(mat_size_entries),
+            "sizes": mat_size_entries
         })
 
-    # Spools per brand (sitemap style)
+    # Sizes per brand (sitemap style)
     for brand in db.brands:
-        brand_spool_entries = []
-        for s in db.spools:
+        brand_size_entries = []
+        for s in db.sizes:
             v = variants_map.get(s.variant_id)
-            p = products_map.get(v.product_id) if v else None
-            if p and p.brand_id == brand.id:
-                brand_spool_entries.append(make_spool_index_entry(s))
-        write_json(brands_path / f"{brand.slug}-spools.json", {
+            f = filaments_map.get(v.filament_id) if v else None
+            if f and f.brand_id == brand.id:
+                brand_size_entries.append(make_size_index_entry(s))
+        write_json(brands_path / f"{brand.slug}-sizes.json", {
             "version": version,
             "brand": entity_to_dict(brand),
-            "count": len(brand_spool_entries),
-            "spools": brand_spool_entries
+            "count": len(brand_size_entries),
+            "sizes": brand_size_entries
         })
     
-    # === Products ===
-    products_path = api_path / "products"
-    product_index_items = []
-    
-    for product in db.products:
-        product_variants = variants_by_product.get(product.id, [])
-        product_docs = documents_by_product.get(product.id, [])
-        brand = brands_map.get(product.brand_id)
-        material = materials_map.get(product.material_family_id)
-        
-        product_index_items.append({
-            "id": product.id,
-            "slug": product.slug,
-            "name": product.name,
+    # === Filaments ===
+    filaments_path = api_path / "filaments"
+    filament_index_items = []
+
+    for filament in db.filaments:
+        filament_variants = variants_by_filament.get(filament.id, [])
+        filament_docs = documents_by_filament.get(filament.id, [])
+        brand = brands_map.get(filament.brand_id)
+        material = materials_map.get(filament.material_family_id)
+
+        filament_index_items.append({
+            "id": filament.id,
+            "slug": filament.slug,
+            "name": filament.name,
             "brand_slug": brand.slug if brand else None,
             "brand_name": brand.name if brand else None,
             "material_code": material.code if material else None,
-            "variant_count": len(product_variants)
+            "variant_count": len(filament_variants)
         })
-        
-        # Create individual product file with full details
-        # Spools are referenced (not embedded) - data lives in /spools/{id}.json
-        product_data = {
+
+        # Create individual filament file with full details
+        # Sizes are referenced (not embedded) - data lives in /sizes/{id}.json
+        filament_data = {
             "version": version,
-            "product": entity_to_dict(product),
+            "filament": entity_to_dict(filament),
             **make_brand_ref(brand),
             **make_material_ref(material),
-            "documents": [entity_to_dict(d) for d in product_docs],
+            "documents": [entity_to_dict(d) for d in filament_docs],
             "variants": [
                 {
                     **entity_to_dict(v),
-                    "spools": [
+                    "sizes": [
                         {
-                            **make_spool_ref(s),
+                            **make_size_ref(s),
                             "sku": s.sku,
                             "gtin": s.gtin,
-                            "path": f"../../spools/{s.id}.json"
+                            "path": f"../../sizes/{s.id}.json"
                         }
-                        for s in spools_by_variant.get(v.id, [])
+                        for s in sizes_by_variant.get(v.id, [])
                     ]
                 }
-                for v in product_variants
+                for v in filament_variants
             ]
         }
-        write_json(products_path / f"{product.id}.json", product_data)
-    
-    # Write product index
-    product_index = {
+        write_json(filaments_path / f"{filament.id}.json", filament_data)
+
+    # Write filament index
+    filament_index = {
         "version": version,
-        "count": len(db.products),
-        "products": product_index_items
+        "count": len(db.filaments),
+        "filaments": filament_index_items
     }
-    write_json(products_path / "index.json", product_index)
-    print(f"  Written: {len(db.products)} product files to {products_path}")
+    write_json(filaments_path / "index.json", filament_index)
+    print(f"  Written: {len(db.filaments)} filament files to {filaments_path}")
     
     # === Stores ===
     stores_path = api_path / "stores"
@@ -513,15 +529,15 @@ def export_api(
             "search_text": brand.name.lower()
         })
     
-    # Add products (with brand prefix)
-    for product in db.products:
-        brand = brands_map.get(product.brand_id)
-        full_name = f"{brand.name} {product.name}" if brand else product.name
+    # Add filaments (with brand prefix)
+    for filament in db.filaments:
+        brand = brands_map.get(filament.brand_id)
+        full_name = f"{brand.name} {filament.name}" if brand else filament.name
         autocomplete_items.append({
-            "type": "product",
-            "id": product.id,
-            "slug": product.slug,
-            "name": product.name,
+            "type": "filament",
+            "id": filament.id,
+            "slug": filament.slug,
+            "name": filament.name,
             "brand_slug": brand.slug if brand else None,
             "full_name": full_name,
             "search_text": full_name.lower()
@@ -562,18 +578,13 @@ def export_api(
         ]
     })
 
-    # Build nested: brand → material code → product slug → variant slug
-    # Precompute maps
-    products_by_material = {}
-    for p in db.products:
-        products_by_material.setdefault(p.material_family_id, []).append(p)
-
+    # Build nested: brand → material code → filament slug → variant slug
     for brand in db.brands:
         brand_catalog_root = catalog_path / brand.slug
-        brand_products = products_by_brand.get(brand.id, [])
+        brand_filaments = filaments_by_brand.get(brand.id, [])
 
         # Materials present for this brand
-        brand_material_ids = sorted({p.material_family_id for p in brand_products})
+        brand_material_ids = sorted({f.material_family_id for f in brand_filaments})
         brand_materials = [materials_map[mid] for mid in brand_material_ids if mid in materials_map]
 
         # Brand index.json
@@ -592,68 +603,68 @@ def export_api(
 
         for material in brand_materials:
             mat_root = brand_catalog_root / material.code.lower()
-            # Products for this brand+material
-            bmp = [p for p in brand_products if p.material_family_id == material.id]
+            # Filaments for this brand+material
+            bmf = [f for f in brand_filaments if f.material_family_id == material.id]
             write_json(mat_root / "index.json", {
                 "version": version,
                 **make_brand_ref(brand),
                 **make_material_ref(material),
-                "products": [
+                "filaments": [
                     {
-                        "id": p.id,
-                        "slug": p.slug,
-                        "name": p.name,
-                        "path": f"{p.slug}/index.json",
-                        "variant_count": len(variants_by_product.get(p.id, []))
-                    } for p in bmp
+                        "id": f.id,
+                        "slug": f.slug,
+                        "name": f.name,
+                        "path": f"{f.slug}/index.json",
+                        "variant_count": len(variants_by_filament.get(f.id, []))
+                    } for f in bmf
                 ]
             })
 
-            for p in bmp:
-                prod_root = mat_root / p.slug
-                prod_variants = variants_by_product.get(p.id, [])
+            for f in bmf:
+                filament_root = mat_root / f.slug
+                filament_variants = variants_by_filament.get(f.id, [])
 
-                # Product index.json under catalog
-                write_json(prod_root / "index.json", {
+                # Filament index.json under catalog
+                write_json(filament_root / "index.json", {
                     "version": version,
                     **make_brand_ref(brand),
                     **make_material_ref(material),
-                    **make_product_ref(p),
+                    **make_filament_ref(f),
                     "variants": [
                         {
                             "id": v.id,
                             "slug": v.slug if hasattr(v, 'slug') else None,
                             "color_name": v.color_name,
                             "path": f"{(v.slug or '').strip() or 'variant'}.json"
-                        } for v in prod_variants
+                        } for v in filament_variants
                     ]
                 })
 
-                for v in prod_variants:
+                for v in filament_variants:
                     v_slug = (getattr(v, 'slug', None) or (v.color_name or '')).strip()
                     if not v_slug:
                         v_slug = v.id  # fallback
                     v_slug = (v_slug or '').lower().replace(' ', '-')
 
-                    # Build spool references (not embedded) - full data lives in /spools/{id}.json
-                    spools_payload = []
-                    for s in spools_by_variant.get(v.id, []) or []:
-                        spool_ref = {
-                            **make_spool_ref(s),
+                    # Build size references (not embedded) - full data lives in /sizes/{id}.json
+                    sizes_payload = []
+                    for s in sizes_by_variant.get(v.id, []) or []:
+                        size_ref = {
+                            **make_size_ref(s),
                             "sku": s.sku,
                             "gtin": s.gtin,
-                            "path": f"../../../../spools/{s.id}.json"
+                            "path": f"../../../../sizes/{s.id}.json"
                         }
-                        spools_payload.append(spool_ref)
+                        sizes_payload.append(size_ref)
 
-                    write_json(prod_root / f"{v_slug}.json", {
+                    write_json(filament_root / f"{v_slug}.json", {
                         "version": version,
                         **make_brand_ref(brand),
                         **make_material_ref(material),
-                        **make_product_ref(p),
+                        **make_filament_ref(f),
                         "variant": entity_to_dict(v),
-                        # Spools are referenced (not embedded) - data lives in /spools/{id}.json
-                        "spools": spools_payload
+                        # Sizes are referenced (not embedded) - data lives in /sizes/{id}.json
+                        "sizes": sizes_payload
                     })
 
     # === Routes manifest ===
@@ -667,20 +678,20 @@ def export_api(
             "brand": "/brands/{slug}.json",
             "materials": "/materials/index.json",
             "material": "/materials/{code}.json",
-            "material_spools": "/materials/{code}-spools.json",
-            "products": "/products/index.json",
-            "product": "/products/{id}.json",
+            "material_sizes": "/materials/{code}-sizes.json",
+            "filaments": "/filaments/index.json",
+            "filament": "/filaments/{id}.json",
             "stores": "/stores/index.json",
             "store": "/stores/{slug}.json",
             "search": "/search/autocomplete.json",
-            "spools": "/spools/index.json",
-            "spool": "/spools/{id}.json",
-            "brand_spools": "/brands/{slug}-spools.json",
+            "sizes": "/sizes/index.json",
+            "size": "/sizes/{id}.json",
+            "brand_sizes": "/brands/{slug}-sizes.json",
             "catalog": "/catalog/index.json",
             "catalog_brand": "/catalog/{brand}/index.json",
             "catalog_material": "/catalog/{brand}/{material}/index.json",
-            "catalog_product": "/catalog/{brand}/{material}/{product}/index.json",
-            "catalog_variant": "/catalog/{brand}/{material}/{product}/{variant}.json"
+            "catalog_filament": "/catalog/{brand}/{material}/{filament}/index.json",
+            "catalog_variant": "/catalog/{brand}/{material}/{filament}/{variant}.json"
         }
     }
     write_json(api_path / "routes.json", routes)

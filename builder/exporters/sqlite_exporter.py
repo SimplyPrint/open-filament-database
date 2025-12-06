@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS material_family (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_material_code ON material_family(code);
 
--- Product table
-CREATE TABLE IF NOT EXISTS product (
+-- Filament table
+CREATE TABLE IF NOT EXISTS filament (
     id TEXT PRIMARY KEY,
     brand_id TEXT NOT NULL REFERENCES brand(id) ON DELETE CASCADE,
     material_family_id TEXT NOT NULL REFERENCES material_family(id),
@@ -59,13 +59,13 @@ CREATE TABLE IF NOT EXISTS product (
     created_at TEXT,
     updated_at TEXT
 );
-CREATE INDEX IF NOT EXISTS ix_product_brand ON product(brand_id);
-CREATE INDEX IF NOT EXISTS ix_product_material ON product(material_family_id);
+CREATE INDEX IF NOT EXISTS ix_filament_brand ON filament(brand_id);
+CREATE INDEX IF NOT EXISTS ix_filament_material ON filament(material_family_id);
 
 -- Variant table
 CREATE TABLE IF NOT EXISTS variant (
     id TEXT PRIMARY KEY,
-    product_id TEXT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    filament_id TEXT NOT NULL REFERENCES filament(id) ON DELETE CASCADE,
     color_name TEXT,
     finish TEXT,
     color_value TEXT,
@@ -73,10 +73,10 @@ CREATE TABLE IF NOT EXISTS variant (
     images TEXT,     -- JSON array
     source_path TEXT
 );
-CREATE INDEX IF NOT EXISTS ix_variant_product ON variant(product_id);
+CREATE INDEX IF NOT EXISTS ix_variant_filament ON variant(filament_id);
 
--- Spool table
-CREATE TABLE IF NOT EXISTS spool (
+-- Size table
+CREATE TABLE IF NOT EXISTS size (
     id TEXT PRIMARY KEY,
     variant_id TEXT NOT NULL REFERENCES variant(id) ON DELETE CASCADE,
     sku TEXT,
@@ -87,9 +87,9 @@ CREATE TABLE IF NOT EXISTS spool (
     msrp_amount TEXT,
     msrp_currency TEXT
 );
-CREATE INDEX IF NOT EXISTS ix_spool_variant ON spool(variant_id);
-CREATE INDEX IF NOT EXISTS ix_spool_sku ON spool(sku);
-CREATE INDEX IF NOT EXISTS ix_spool_gtin ON spool(gtin);
+CREATE INDEX IF NOT EXISTS ix_size_variant ON size(variant_id);
+CREATE INDEX IF NOT EXISTS ix_size_sku ON size(sku);
+CREATE INDEX IF NOT EXISTS ix_size_gtin ON size(gtin);
 
 -- Store table
 CREATE TABLE IF NOT EXISTS store (
@@ -103,30 +103,28 @@ CREATE TABLE IF NOT EXISTS store (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_store_slug ON store(slug);
 
--- Offer table
-CREATE TABLE IF NOT EXISTS offer (
+-- Purchase link table
+CREATE TABLE IF NOT EXISTS purchase_link (
     id TEXT PRIMARY KEY,
-    store_id TEXT NOT NULL REFERENCES store(id) ON DELETE CASCADE,
-    spool_id TEXT REFERENCES spool(id) ON DELETE CASCADE,
+    size_id TEXT NOT NULL REFERENCES size(id) ON DELETE CASCADE,
+    store_id TEXT NOT NULL,
     url TEXT NOT NULL,
-    price_amount TEXT,
-    price_currency TEXT,
-    in_stock INTEGER,  -- 0/1/NULL
-    last_seen_at TEXT,
-    shipping_regions TEXT  -- JSON array
+    spool_refill INTEGER DEFAULT 0,
+    ships_from TEXT,  -- JSON array
+    ships_to TEXT     -- JSON array
 );
-CREATE INDEX IF NOT EXISTS ix_offer_store ON offer(store_id);
-CREATE INDEX IF NOT EXISTS ix_offer_spool ON offer(spool_id);
+CREATE INDEX IF NOT EXISTS ix_purchase_link_size ON purchase_link(size_id);
+CREATE INDEX IF NOT EXISTS ix_purchase_link_store ON purchase_link(store_id);
 
 -- Document table
 CREATE TABLE IF NOT EXISTS document (
     id TEXT PRIMARY KEY,
-    product_id TEXT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    filament_id TEXT NOT NULL REFERENCES filament(id) ON DELETE CASCADE,
     type TEXT NOT NULL,
     url TEXT NOT NULL,
     language TEXT
 );
-CREATE INDEX IF NOT EXISTS ix_document_product ON document(product_id);
+CREATE INDEX IF NOT EXISTS ix_document_filament ON document(filament_id);
 
 -- Tag table
 CREATE TABLE IF NOT EXISTS tag (
@@ -134,11 +132,11 @@ CREATE TABLE IF NOT EXISTS tag (
     name TEXT NOT NULL UNIQUE
 );
 
--- Product-Tag many-to-many
-CREATE TABLE IF NOT EXISTS product_tag (
-    product_id TEXT NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+-- Filament-Tag many-to-many
+CREATE TABLE IF NOT EXISTS filament_tag (
+    filament_id TEXT NOT NULL REFERENCES filament(id) ON DELETE CASCADE,
     tag_id TEXT NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
-    PRIMARY KEY (product_id, tag_id)
+    PRIMARY KEY (filament_id, tag_id)
 );
 
 -- Variant-Tag many-to-many
@@ -149,9 +147,9 @@ CREATE TABLE IF NOT EXISTS variant_tag (
 );
 
 -- Useful views
-CREATE VIEW IF NOT EXISTS v_full_spool AS
-SELECT 
-    s.id AS spool_id,
+CREATE VIEW IF NOT EXISTS v_full_size AS
+SELECT
+    s.id AS size_id,
     s.sku,
     s.gtin,
     s.weight_g,
@@ -163,44 +161,21 @@ SELECT
     v.color_name,
     v.finish,
     v.color_value,
-    p.id AS product_id,
-    p.name AS product_name,
-    p.slug AS product_slug,
-    p.description AS product_description,
+    f.id AS filament_id,
+    f.name AS filament_name,
+    f.slug AS filament_slug,
+    f.description AS filament_description,
     mf.id AS material_family_id,
     mf.code AS material_code,
     mf.name AS material_name,
     b.id AS brand_id,
     b.name AS brand_name,
     b.slug AS brand_slug
-FROM spool s
+FROM size s
 JOIN variant v ON v.id = s.variant_id
-JOIN product p ON p.id = v.product_id
-JOIN material_family mf ON mf.id = p.material_family_id
-JOIN brand b ON b.id = p.brand_id;
-
-CREATE VIEW IF NOT EXISTS v_spool_offers AS
-SELECT 
-    s.id AS spool_id,
-    s.sku,
-    s.weight_g,
-    s.diameter_mm,
-    v.color_name,
-    p.name AS product_name,
-    b.name AS brand_name,
-    st.name AS store_name,
-    st.storefront_url AS storefront_url,
-    o.url AS offer_url,
-    o.price_amount,
-    o.price_currency,
-    o.in_stock,
-    o.last_seen_at
-FROM offer o
-JOIN store st ON st.id = o.store_id
-LEFT JOIN spool s ON s.id = o.spool_id
-LEFT JOIN variant v ON v.id = s.variant_id
-LEFT JOIN product p ON p.id = v.product_id
-LEFT JOIN brand b ON b.id = p.brand_id;
+JOIN filament f ON f.id = v.filament_id
+JOIN material_family mf ON mf.id = f.material_family_id
+JOIN brand b ON b.id = f.brand_id;
 """
 
 
@@ -268,35 +243,35 @@ def export_sqlite(db: Database, output_dir: str, version: str, generated_at: str
             VALUES (?, ?, ?)
         """, (mf.id, mf.code, mf.name))
     
-    # Insert products
-    for product in db.products:
+    # Insert filaments
+    for filament in db.filaments:
         cursor.execute("""
-            INSERT INTO product (id, brand_id, material_family_id, name, slug, description, 
+            INSERT INTO filament (id, brand_id, material_family_id, name, slug, description,
                                  diameters, specs, images, source_path, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            product.id,
-            product.brand_id,
-            product.material_family_id,
-            product.name,
-            product.slug,
-            product.description,
-            json_or_none(product.diameters),
-            json_or_none(product.specs),
-            json_or_none(product.images),
-            product.source_path,
-            product.created_at,
-            product.updated_at
+            filament.id,
+            filament.brand_id,
+            filament.material_family_id,
+            filament.name,
+            filament.slug,
+            filament.description,
+            json_or_none(filament.diameters),
+            json_or_none(filament.specs),
+            json_or_none(filament.images),
+            filament.source_path,
+            filament.created_at,
+            filament.updated_at
         ))
-    
+
     # Insert variants
     for variant in db.variants:
         cursor.execute("""
-            INSERT INTO variant (id, product_id, color_name, finish, color_value, colorants, images, source_path)
+            INSERT INTO variant (id, filament_id, color_name, finish, color_value, colorants, images, source_path)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             variant.id,
-            variant.product_id,
+            variant.filament_id,
             variant.color_name,
             variant.finish,
             variant.color_value,
@@ -304,22 +279,22 @@ def export_sqlite(db: Database, output_dir: str, version: str, generated_at: str
             json_or_none(variant.images),
             variant.source_path
         ))
-    
-    # Insert spools
-    for spool in db.spools:
+
+    # Insert sizes
+    for size in db.sizes:
         cursor.execute("""
-            INSERT INTO spool (id, variant_id, sku, gtin, weight_g, length_m, diameter_mm, msrp_amount, msrp_currency)
+            INSERT INTO size (id, variant_id, sku, gtin, weight_g, length_m, diameter_mm, msrp_amount, msrp_currency)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            spool.id,
-            spool.variant_id,
-            spool.sku,
-            spool.gtin,
-            spool.weight_g,
-            spool.length_m,
-            spool.diameter_mm,
-            spool.msrp_amount,
-            spool.msrp_currency
+            size.id,
+            size.variant_id,
+            size.sku,
+            size.gtin,
+            size.weight_g,
+            size.length_m,
+            size.diameter_mm,
+            size.msrp_amount,
+            size.msrp_currency
         ))
     
     # Insert stores
@@ -336,44 +311,61 @@ def export_sqlite(db: Database, output_dir: str, version: str, generated_at: str
             json_or_none(store.ships_to),
             getattr(store, 'logo', None)
         ))
-    
+
+    # Insert purchase links
+    for pl in db.purchase_links:
+        cursor.execute("""
+            INSERT INTO purchase_link (id, size_id, store_id, url, spool_refill, ships_from, ships_to)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            pl.id,
+            pl.size_id,
+            pl.store_id,
+            pl.url,
+            bool_to_int(pl.spool_refill),
+            json_or_none(pl.ships_from),
+            json_or_none(pl.ships_to)
+        ))
+
     # Insert documents
     for doc in db.documents:
         cursor.execute("""
-            INSERT INTO document (id, product_id, type, url, language)
+            INSERT INTO document (id, filament_id, type, url, language)
             VALUES (?, ?, ?, ?, ?)
         """, (
             doc.id,
-            doc.product_id,
+            doc.filament_id,
             doc.type,
             doc.url,
             doc.language
         ))
-    
+
     # Insert tags
     for tag in db.tags:
         cursor.execute("""
             INSERT INTO tag (id, name)
             VALUES (?, ?)
         """, (tag.id, tag.name))
-    
+
     # Commit and close
     conn.commit()
-    
+
     # Get statistics
     cursor.execute("SELECT COUNT(*) FROM brand")
     brand_count = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM product")
-    product_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM filament")
+    filament_count = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM variant")
     variant_count = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM spool")
-    spool_count = cursor.fetchone()[0]
-    
+    cursor.execute("SELECT COUNT(*) FROM size")
+    size_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM purchase_link")
+    purchase_link_count = cursor.fetchone()[0]
+
     conn.close()
-    
+
     print(f"  Written: {db_file}")
-    print(f"    Brands: {brand_count}, Products: {product_count}, Variants: {variant_count}, Spools: {spool_count}")
+    print(f"    Brands: {brand_count}, Filaments: {filament_count}, Variants: {variant_count}, Sizes: {size_count}, Purchase Links: {purchase_link_count}")
     
     # Create compressed version
     xz_file = output_path / f"open_filament_db_v{schema_version}.sqlite.xz"

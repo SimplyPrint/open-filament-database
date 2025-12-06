@@ -63,44 +63,44 @@ def export_csv(db: Database, output_dir: str, version: str, generated_at: str):
             writer.writerow([mf.id, mf.code, mf.name])
     print(f"  Written: {materials_file}")
     
-    # Export products
-    products_file = output_path / "products.csv"
-    with open(products_file, 'w', newline='', encoding='utf-8') as f:
+    # Export filaments
+    filaments_file = output_path / "filaments.csv"
+    with open(filaments_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'id', 'brand_id', 'material_family_id', 'name', 'slug', 
+            'id', 'brand_id', 'material_family_id', 'name', 'slug',
             'description', 'diameters', 'specs', 'images', 'source_path',
             'created_at', 'updated_at'
         ])
-        for product in db.products:
+        for filament in db.filaments:
             writer.writerow([
-                product.id,
-                product.brand_id,
-                product.material_family_id,
-                product.name,
-                product.slug,
-                product.description or "",
-                list_to_str(product.diameters),
-                dict_to_str(product.specs),
-                list_to_str(product.images),
-                product.source_path or "",
-                product.created_at or "",
-                product.updated_at or ""
+                filament.id,
+                filament.brand_id,
+                filament.material_family_id,
+                filament.name,
+                filament.slug,
+                filament.description or "",
+                list_to_str(filament.diameters),
+                dict_to_str(filament.specs),
+                list_to_str(filament.images),
+                filament.source_path or "",
+                filament.created_at or "",
+                filament.updated_at or ""
             ])
-    print(f"  Written: {products_file}")
-    
+    print(f"  Written: {filaments_file}")
+
     # Export variants
     variants_file = output_path / "variants.csv"
     with open(variants_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'id', 'product_id', 'color_name', 'finish', 
+            'id', 'filament_id', 'color_name', 'finish',
             'color_value', 'colorants', 'images', 'source_path'
         ])
         for variant in db.variants:
             writer.writerow([
                 variant.id,
-                variant.product_id,
+                variant.filament_id,
                 variant.color_name or "",
                 variant.finish or "",
                 variant.color_value or "",
@@ -109,28 +109,28 @@ def export_csv(db: Database, output_dir: str, version: str, generated_at: str):
                 variant.source_path or ""
             ])
     print(f"  Written: {variants_file}")
-    
-    # Export spools
-    spools_file = output_path / "spools.csv"
-    with open(spools_file, 'w', newline='', encoding='utf-8') as f:
+
+    # Export sizes
+    sizes_file = output_path / "sizes.csv"
+    with open(sizes_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'id', 'variant_id', 'sku', 'gtin', 'weight_g', 
+            'id', 'variant_id', 'sku', 'gtin', 'weight_g',
             'length_m', 'diameter_mm', 'msrp_amount', 'msrp_currency'
         ])
-        for spool in db.spools:
+        for size in db.sizes:
             writer.writerow([
-                spool.id,
-                spool.variant_id,
-                spool.sku or "",
-                spool.gtin or "",
-                spool.weight_g,
-                spool.length_m or "",
-                spool.diameter_mm,
-                spool.msrp_amount or "",
-                spool.msrp_currency or ""
+                size.id,
+                size.variant_id,
+                size.sku or "",
+                size.gtin or "",
+                size.weight_g,
+                size.length_m or "",
+                size.diameter_mm,
+                size.msrp_amount or "",
+                size.msrp_currency or ""
             ])
-    print(f"  Written: {spools_file}")
+    print(f"  Written: {sizes_file}")
     
     # Export stores
     stores_file = output_path / "stores.csv"
@@ -148,67 +148,84 @@ def export_csv(db: Database, output_dir: str, version: str, generated_at: str):
                 getattr(store, 'logo', '') or ""
             ])
     print(f"  Written: {stores_file}")
-    
+
+    # Export purchase links
+    purchase_links_file = output_path / "purchase_links.csv"
+    with open(purchase_links_file, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(['id', 'size_id', 'store_id', 'url', 'spool_refill', 'ships_from', 'ships_to'])
+        for pl in db.purchase_links:
+            writer.writerow([
+                pl.id,
+                pl.size_id,
+                pl.store_id,
+                pl.url,
+                1 if pl.spool_refill else 0,
+                list_to_str(pl.ships_from),
+                list_to_str(pl.ships_to)
+            ])
+    print(f"  Written: {purchase_links_file}")
+
     # Export documents
     documents_file = output_path / "documents.csv"
     with open(documents_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['id', 'product_id', 'type', 'url', 'language'])
+        writer.writerow(['id', 'filament_id', 'type', 'url', 'language'])
         for doc in db.documents:
             writer.writerow([
                 doc.id,
-                doc.product_id,
+                doc.filament_id,
                 doc.type,
                 doc.url,
                 doc.language or ""
             ])
     print(f"  Written: {documents_file}")
-    
-    # Export a denormalized full spools view (most useful for analysis)
-    full_spools_file = output_path / "full_spools.csv"
-    
+
+    # Export a denormalized full sizes view (most useful for analysis)
+    full_sizes_file = output_path / "full_sizes.csv"
+
     # Build lookup maps
     brands_map = {b.id: b for b in db.brands}
     materials_map = {m.id: m for m in db.material_families}
-    products_map = {p.id: p for p in db.products}
+    filaments_map = {f.id: f for f in db.filaments}
     variants_map = {v.id: v for v in db.variants}
-    
-    with open(full_spools_file, 'w', newline='', encoding='utf-8') as f:
+
+    with open(full_sizes_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([
-            'spool_id', 'sku', 'gtin', 'weight_g', 'length_m', 'diameter_mm',
+            'size_id', 'sku', 'gtin', 'weight_g', 'length_m', 'diameter_mm',
             'msrp_amount', 'msrp_currency',
             'variant_id', 'color_name', 'finish', 'color_value',
-            'product_id', 'product_name', 'product_slug',
+            'filament_id', 'filament_name', 'filament_slug',
             'material_family_id', 'material_code', 'material_name',
             'brand_id', 'brand_name', 'brand_slug'
         ])
-        for spool in db.spools:
-            variant = variants_map.get(spool.variant_id)
+        for size in db.sizes:
+            variant = variants_map.get(size.variant_id)
             if not variant:
                 continue
-            product = products_map.get(variant.product_id)
-            if not product:
+            filament = filaments_map.get(variant.filament_id)
+            if not filament:
                 continue
-            material = materials_map.get(product.material_family_id)
-            brand = brands_map.get(product.brand_id)
-            
+            material = materials_map.get(filament.material_family_id)
+            brand = brands_map.get(filament.brand_id)
+
             writer.writerow([
-                spool.id,
-                spool.sku or "",
-                spool.gtin or "",
-                spool.weight_g,
-                spool.length_m or "",
-                spool.diameter_mm,
-                spool.msrp_amount or "",
-                spool.msrp_currency or "",
+                size.id,
+                size.sku or "",
+                size.gtin or "",
+                size.weight_g,
+                size.length_m or "",
+                size.diameter_mm,
+                size.msrp_amount or "",
+                size.msrp_currency or "",
                 variant.id,
                 variant.color_name or "",
                 variant.finish or "",
                 variant.color_value or "",
-                product.id,
-                product.name,
-                product.slug,
+                filament.id,
+                filament.name,
+                filament.slug,
                 material.id if material else "",
                 material.code if material else "",
                 material.name if material else "",
@@ -216,7 +233,7 @@ def export_csv(db: Database, output_dir: str, version: str, generated_at: str):
                 brand.name if brand else "",
                 brand.slug if brand else ""
             ])
-    print(f"  Written: {full_spools_file}")
+    print(f"  Written: {full_sizes_file}")
     
     # Write README for CSV files
     readme_file = output_path / "README.md"
@@ -230,13 +247,13 @@ Generated: {generated_at}
 
 - `brands.csv` - Filament manufacturers/brands
 - `material_families.csv` - Material types (PLA, PETG, ABS, etc.)
-- `products.csv` - Product lines (linked to brand and material)
-- `variants.csv` - Color/finish variants (linked to product)
-- `spools.csv` - Individual spool sizes/SKUs (linked to variant)
+- `filaments.csv` - Filament lines (linked to brand and material)
+- `variants.csv` - Color/finish variants (linked to filament)
+- `sizes.csv` - Individual sizes/SKUs (linked to variant)
 - `stores.csv` - Retail stores
-- `offers.csv` - Store offers/prices (linked to store and spool)
-- `documents.csv` - TDS/SDS documents (linked to product)
-- `full_spools.csv` - Denormalized view joining spool→variant→product→material→brand
+- `purchase_links.csv` - Purchase links (linked to size and store)
+- `documents.csv` - TDS/SDS documents (linked to filament)
+- `full_sizes.csv` - Denormalized view joining size→variant→filament→material→brand
 
 ## Column Conventions
 
@@ -249,11 +266,11 @@ Generated: {generated_at}
 ## Relationships
 
 ```
-brand (1) ←── (N) product (1) ←── (N) variant (1) ←── (N) spool
-                   │                                        │
-                   │                                        │
-                   ↓                                        ↓
-            material_family                          offer ───→ store
+brand (1) ←── (N) filament (1) ←── (N) variant (1) ←── (N) size (1) ←── (N) purchase_link
+                   │                                          │
+                   │                                          └───────────→ store
+                   ↓
+            material_family
                    │
                    ↓
               document
